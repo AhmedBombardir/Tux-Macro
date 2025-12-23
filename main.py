@@ -5,16 +5,17 @@ import time
 import subprocess
 import os
 
-# Ustawiamy ścieżkę do socketu tam, gdzie ydotool sam go sobie stworzył
+#set ydotool socket path
 socket_path = "/run/user/1000/.ydotool_socket"
 os.environ["YDOTOOL_SOCKET"] = socket_path
 
 def start_ydotool():
-    # 1. Zabijamy stare procesy
+
+    #kill old processes
     subprocess.run(["pkill", "-f", "ydotoold"], stderr=subprocess.DEVNULL)
     
-    # 2. Uruchamiamy z jawnym parametrem --socket-path (naprawia błąd 'ambiguous')
-    # Dodajemy też --socket-perm 0666, żeby Python mógł swobodnie czytać socket
+    #fix ambigous issuse
+    #also add socket perm to allow python to read it freely
     try:
         proc = subprocess.Popen(
             ['ydotoold', '--socket-path', socket_path, '--socket-perm', '0666'],
@@ -26,7 +27,7 @@ def start_ydotool():
         print(f"Start error: {e}")
         return None
     
-    # 3. Czekamy na READY
+    #wait for start
     time.sleep(1.5)
     return proc
 

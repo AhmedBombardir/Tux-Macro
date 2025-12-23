@@ -3,12 +3,12 @@ import time
 import os
 import settings
 
-# Ustaw ścieżkę do socketu
+# set cocket path
 os.environ['YDOTOOL_SOCKET'] = '/tmp/.ydotool_socket'
 
 baseMoveSpeed = 31
 
-# Słownik wszystkich kodów klawiszy
+#key codes
 KEYS = {
     'a': '30', 'b': '48', 'c': '46', 'd': '32', 'e': '18',
     'f': '33', 'g': '34', 'h': '35', 'i': '23', 'j': '36',

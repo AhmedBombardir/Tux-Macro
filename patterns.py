@@ -57,7 +57,7 @@ def CornerXSnake():
     keys.hold('d', 1.5)
     keys.key_down('w')
     keys.key_down('a')
-    time.sleep(2)
+    time.sleep(1)
     keys.key_up('w')
     keys.key_up('a')
 
