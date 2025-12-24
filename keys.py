@@ -2,6 +2,8 @@ import subprocess
 import time
 import os
 import settings
+from evdev import UInput, ecodes as e
+
 
 # set cocket path
 os.environ['YDOTOOL_SOCKET'] = '/tmp/.ydotool_socket'
@@ -29,13 +31,47 @@ KEYS = {
 }
 
 
+capabilities = {
+    e.EV_KEY: [
+        e.BTN_LEFT,
+        e.BTN_RIGHT,
+        e.BTN_MIDDLE,
+    ],
+    e.EV_REL: [
+        e.REL_X,
+        e.REL_Y,
+        e.REL_WHEEL,
+    ],
+}
+
+ui = UInput(capabilities, name="virtual-mouse")
+
+def lmb_down():
+    ui.write(e.EV_KEY, e.BTN_LEFT, 1)
+    ui.syn()
+
+def lmb_up():
+    ui.write(e.EV_KEY, e.BTN_LEFT, 0)
+    ui.syn()
+
+def move(dx, dy):
+    ui.write(e.EV_REL, e.REL_X, dx)
+    ui.write(e.EV_REL, e.REL_Y, dy)
+    ui.syn()
+
+def scroll(amount):
+    ui.write(e.EV_REL, e.REL_WHEEL, amount)
+    ui.syn()
+
+
+
 def press(key_name):
     key = key_name.lower()
     if key in KEYS:
         code = KEYS[key]
         subprocess.run(['ydotool', 'key', f'{code}:1', f'{code}:0'])
     else:
-        print(f"Nieznany klawisz: {key_name}")
+        print(f"Unknown key: {key_name}")
 
 
 def hold(key_name, duration=0.1):
@@ -47,7 +83,7 @@ def hold(key_name, duration=0.1):
         time.sleep(duration * speed_multiplier)
         subprocess.run(['ydotool', 'key', f'{code}:0'])
     else:
-        print(f"Nieznany klawisz: {key_name}")
+        print(f"Unknown key: {key_name}")
 
 
 def key_down(key_name):
@@ -56,7 +92,7 @@ def key_down(key_name):
         code = KEYS[key]
         subprocess.run(['ydotool', 'key', f'{code}:1'])
     else:
-        print(f"Nieznany klawisz: {key_name}")
+        print(f"Unknown key: {key_name}")
 
 
 def key_up(key_name):
@@ -65,7 +101,7 @@ def key_up(key_name):
         code = KEYS[key]
         subprocess.run(['ydotool', 'key', f'{code}:0'])
     else:
-        print(f"Nieznany klawisz: {key_name}")
+        print(f"Unknown key: {key_name}")
 
 
 def combo(*keys_list):
@@ -75,7 +111,7 @@ def combo(*keys_list):
         if k in KEYS:
             codes.append(KEYS[k])
         else:
-            print(f"Nieznany klawisz: {key}")
+            print(f"Unknown key: {key}")
             return
     for code in codes:
         subprocess.run(['ydotool', 'key', f'{code}:1'])

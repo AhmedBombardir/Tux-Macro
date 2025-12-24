@@ -41,6 +41,7 @@ def CornerXSnake():
     global patternFinished
     patternFinished = False
 
+    keys.lmb_down()
     keys.key_down('w')
     keys.key_down('a')
     time.sleep(2)
@@ -61,4 +62,9 @@ def CornerXSnake():
     keys.key_up('w')
     keys.key_up('a')
 
+    
     patternFinished = True
+    keys.lmb_up()
+    
+
+

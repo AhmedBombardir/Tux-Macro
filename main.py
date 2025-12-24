@@ -4,10 +4,15 @@ import threading
 import time
 import subprocess
 import os
+import paths
+
+
 
 #set ydotool socket path
 socket_path = "/run/user/1000/.ydotool_socket"
 os.environ["YDOTOOL_SOCKET"] = socket_path
+
+
 
 def start_ydotool():
 
@@ -31,18 +36,28 @@ def start_ydotool():
     time.sleep(1.5)
     return proc
 
+
 def macro_loop():
+    paths_done = False
+
+    time.sleep(1)
     while True:
         if gui.playing:
-            patterns.CornerXSnake()
+            if not paths_done:
+                paths.Cannon()
+                paths.Cannon_pine()
+                paths_done = True
+            else:
+                patterns.CornerXSnake()  # gather non stop
         else:
+            paths_done = False
             time.sleep(0.1)
 
-# --- START ---
 ydotool_proc = start_ydotool()
 
 macro_thread = threading.Thread(target=macro_loop, daemon=True)
 macro_thread.start()
+
 
 try:
     while gui.running:
