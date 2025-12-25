@@ -108,11 +108,6 @@ def Render():
     pattern_dropdown.draw(screen)
     field_dropdown.draw(screen)
 
-    # change color when macro is running
-    if playing:
-        screen.fill((0, 100, 0))  # when working
-
-
     #------------------------------------------------------------------
 
     DrawText("Tux Macro", (15, 15), 48)
@@ -124,6 +119,13 @@ def Render():
     DrawText("F3: STOP", (15 + 32 * 4, 400 - 32 - 15), 32)
 
     #------------------------------------------------------------------
+
+    # change color when macro is running
+    #if playing:
+        #screen.fill((0, 100, 0))  # when working
+
+
+    
 
     pygame.display.flip()
     clock.tick(30)

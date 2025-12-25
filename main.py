@@ -44,8 +44,8 @@ def macro_loop():
     while True:
         if gui.playing:
             if not paths_done:
-                paths.Cannon()
-                paths.Cannon_pine()
+                #paths.Cannon()
+                #paths.Cannon_pine()
                 paths_done = True
             else:
                 patterns.CornerXSnake()  # gather non stop
