@@ -66,5 +66,19 @@ def CornerXSnake():
     patternFinished = True
     keys.lmb_up()
     
+def Stationary():
+    global patternFinished
 
+    patternFinished = False
+    keys.lmb_down()
+    patternFinished = True
 
+def E_lol():
+    global patternFinished
+
+    patternFinished = False
+    keys.hold('w', 0.25)
+    keys.hold('d', 0.25)
+    keys.hold('s', 0.25)
+    keys.hold('a', 0.25)
+    patternFinished = True

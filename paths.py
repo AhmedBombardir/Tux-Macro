@@ -86,7 +86,19 @@ def Cannon():
 
 
 
+def Cannon_dandelion():
+    global rotation
 
+    time.sleep(0.5)
+    keys.press('e')
+    time.sleep(0.5)
+    keys.press('space')
+    time.sleep(0.1)
+    keys.press('space')
+    keys.hold('a', 1)
+    keys.press('space')
+    
+        
 def Cannon_pine():
 
     global rotation
@@ -107,4 +119,6 @@ def Cannon_pine():
     keys.key_up('w')
     keys.key_up('a')
     time.sleep(3.5)
+
+
 
