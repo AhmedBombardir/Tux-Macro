@@ -2,6 +2,7 @@ import keys
 import time
 import cv2 as cv
 import numpy as np
+import buff_detection
 
 #macro = bee.BeeSwarmMacro()
 
@@ -16,7 +17,7 @@ def Hives():
     tries = 0
     dist = 0.5
 
-    '''keys.hold('w', 3)
+    keys.hold('w', 3)
     keys.hold('s', 0.5)
     keys.hold('d', 3.5)
 
@@ -35,7 +36,7 @@ def Hives():
             break
         else:
             print("Hive not found")
-            continue'''
+            continue
 
 
 def Pepper():
