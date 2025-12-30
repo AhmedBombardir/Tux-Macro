@@ -3,12 +3,14 @@ import time
 import os
 import settings
 from evdev import UInput, ecodes as e
-import buff_detection as bd
 
-# set cocket path
+# set socket path
 os.environ['YDOTOOL_SOCKET'] = '/tmp/.ydotool_socket'
 
 baseMoveSpeed = 31
+
+# This will be set by main.py
+buff_state = None
 
 #key codes
 KEYS = {
@@ -64,7 +66,6 @@ def scroll(amount):
     ui.syn()
 
 
-
 def press(key_name):
     key = key_name.lower()
     if key in KEYS:
@@ -75,12 +76,34 @@ def press(key_name):
 
 
 def hold(key_name, duration=0.1):
+    """
+    Hold a key for specified duration.
+    Automatically compensates for speed buffs and moveSpeed settings.
+    """
     key = key_name.lower()
+    
+    # Get speed multiplier from settings (moveSpeed)
     speed_multiplier = baseMoveSpeed / settings.moveSpeed
+    
+    # Get buff speed multiplier (if available)
+    buff_speed = 1.0
+    if buff_state is not None:
+        try:
+            with buff_state['lock']:
+                buff_speed = buff_state['speed_multiplier']
+        except:
+            pass
+    
+    # Combine both multipliers
+    # If you have 1.3x speed buff, duration should be 1/1.3 = 0.77x shorter
+    total_multiplier = speed_multiplier / buff_speed
+    
+    adjusted_duration = duration * total_multiplier
+    
     if key in KEYS:
         code = KEYS[key]
         subprocess.run(['ydotool', 'key', f'{code}:1'])
-        time.sleep(duration * speed_multiplier)
+        time.sleep(adjusted_duration)
         subprocess.run(['ydotool', 'key', f'{code}:0'])
     else:
         print(f"Unknown key: {key_name}")
@@ -125,4 +148,17 @@ def type_text(text):
 
 
 def wait(seconds):
-    time.sleep(seconds)
+    """
+    Wait for specified duration.
+    Also compensates for speed buffs.
+    """
+    buff_speed = 1.0
+    if buff_state is not None:
+        try:
+            with buff_state['lock']:
+                buff_speed = buff_state['speed_multiplier']
+        except:
+            pass
+    
+    adjusted_wait = seconds / buff_speed
+    time.sleep(adjusted_wait)

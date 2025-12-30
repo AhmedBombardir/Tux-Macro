@@ -2,6 +2,7 @@ import pygame
 import sys
 import settings
 
+
 pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((500, 400))
@@ -79,9 +80,13 @@ def OnPatternChange(pattern_name):
     print(f" Pattern changed to: {pattern_name}")
 
 def OnFieldChange(field_name):
-    """Called when field dropdown changes"""
     settings.field = field_name
     print(f" Field changed to: {field_name}")
+
+    path_name = main.FIELD_TO_PATH.get(field_name)
+    if path_name:
+        print(f" Queuing path: {path_name}")
+        main.DoPath(path_name)
 
 #------------------------------------------------------------------
 # DROPDOWNS WITH CALLBACKS

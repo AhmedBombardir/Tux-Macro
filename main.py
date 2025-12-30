@@ -1,4 +1,4 @@
-import gui, patterns, threading, time, subprocess, os, settings
+import gui, patterns, threading, time, subprocess, os, settings, paths, queue
 from buff_detection import UltraFastBuffScanner
 
 # Wayland socket configuration
@@ -11,6 +11,54 @@ buff_state = {
     'speed_multiplier': 1.0,
     'lock': threading.Lock()
 }
+
+# Simple path queue
+path_queue = queue.Queue()
+
+# Make buff_state accessible to keys module
+import keys
+keys.buff_state = buff_state
+
+
+
+PATH_FUNCTIONS = {
+    "Hives": paths.Hives,
+    "Pepper": paths.Pepper,
+    "Cannon": paths.Cannon,
+    "Cannon_dandelion": paths.Cannon_dandelion,
+    "Cannon_pine": paths.Cannon_pine,
+    "Cannon_mushroom": paths.Cannon_mushroom,
+    "Cannon_blueflower": paths.Cannon_blueflower,
+    "Cannon_sunflower": paths.Cannon_sunflower,
+    "Cannon_clover": paths.Cannon_clover,
+    "Cannon_strawberry": paths.Cannon_strawberry,
+    "Cannon_spider": paths.Cannon_spider,
+    "Cannon_bamboo": paths.Cannon_bamboo,
+    "Cannon_pineapple": paths.Cannon_pineapple,
+    "Cannon_stump": paths.Cannon_stump,
+    "Cannon_mountain": paths.Cannon_mountain,
+}
+
+
+
+STARTUP_BY_FIELD = {
+    "Dandelion": ["Cannon", "Cannon_dandelion"],
+    "Clover": ["Cannon", "Cannon_clover"],
+    "Sunflower": ["Cannon", "Cannon_sunflower"],
+    "Mushroom": ["Cannon", "Cannon_mushroom"],
+    "Blue Flower": ["Cannon", "Cannon_blueflower"],
+    "Strawberry": ["Cannon", "Cannon_strawberry"],
+    "Spider": ["Cannon", "Cannon_spider"],
+    "Bamboo": ["Cannon", "Cannon_bamboo"],
+    "Pineapple": ["Cannon", "Cannon_pineapple"],
+    "Stump": ["Cannon", "Cannon_stump"],
+    "Mountain": ["Cannon", "Cannon_mountain"],
+
+    # Fields without cannon
+    "Pepper": ["Pepper"],
+}
+
+
 
 def StartYdotool():
     """ 
@@ -44,6 +92,7 @@ def StartYdotool():
     except Exception as e:
         print(f"Start error: {e}")
         return None
+
 
 def BuffScannerThread():
     """
@@ -112,10 +161,12 @@ def BuffScannerThread():
         scanner.cleanup()
         print("[SCANNER] Thread stopped")
 
+
+
 def MacroLoop():
     """
-    Main movement loop - runs patterns continuously.
-    Reads buff state from scanner thread.
+    Main loop - executes startup paths, then runs pattern.
+    Check path_queue to interrupt pattern anytime.
     """
     pattern_functions = {
         "CornerXSnake": patterns.CornerXSnake,
@@ -123,46 +174,98 @@ def MacroLoop():
         "Stationary": patterns.Stationary
     }
     
-    current_pattern = None
+
+    
+    startup_done = False
+    last_playing = False
     
     print("[MACRO] Thread started")
     
     while gui.running:
-        if gui.playing:
-            if current_pattern is None:
-                current_pattern = settings.pattern
-                pattern_func = pattern_functions.get(current_pattern, patterns.CornerXSnake)
-                print(f"--- MACRO STARTED ({current_pattern}) ---")
+        if gui.playing and not last_playing:
             
-            # Get current speed multiplier from scanner thread
+            time.sleep(3)
+            startup_done = False
+            last_playing = gui.playing
+
+
+        if gui.playing:
+            
+        # === STARTUP SEQUENCE (runs once) ===
+            if not startup_done:
+                print("=== STARTUP ===")
+
+                startup_paths = STARTUP_BY_FIELD.get(
+                    settings.field,
+                    ["Cannon"]  # fallback
+                )
+
+                for path_name in startup_paths:
+                    if path_name in PATH_FUNCTIONS:
+                        print(f"[STARTUP] {path_name}")
+                        PATH_FUNCTIONS[path_name]()
+
+                startup_done = True
+                print("=== PATTERN START ===")
+
+
+
+            # === CHECK FOR MANUAL PATH ===
+            if not path_queue.empty():
+                path_name = path_queue.get()
+                if path_name in path_functions:
+                    print(f"[PATH] {path_name}")
+                    try:
+                        path_functions[path_name]()
+                    except Exception as e:
+                        print(f"[PATH] Error: {e}")
+                path_queue.task_done()
+                continue
+            
+
+
+            # === RUN PATTERN ===
+            pattern_func = pattern_functions.get(settings.pattern, patterns.CornerXSnake)
+            
+
+
+            # Get speed multiplier
             with buff_state['lock']:
                 speed_mult = buff_state['speed_multiplier']
-                active_buffs = list(buff_state['current_buffs'].keys())
             
-            # Display speed info occasionally
-            if speed_mult > 1.0 and active_buffs:
-                print(f"[MACRO] Speed boost active: {speed_mult:.1f}x (Buffs: {active_buffs})")
-            
-            # Execute movement pattern
+
+
+            # Execute pattern
             try:
                 pattern_func()
             except Exception as e:
                 if gui.playing:
-                    print(f"Movement Warning: {e}")
+                    print(f"Pattern error: {e}")
             
-            # Small delay between pattern executions
             time.sleep(0.01)
+        
         else:
-            current_pattern = None
+            startup_done = False  # Reset on stop
             time.sleep(0.2)
     
     print("[MACRO] Thread stopped")
 
+
+# === SIMPLE API ===
+def DoPath(path_name):
+    """
+    Execute a path. That's it.
+    Usage: DoPath('Cannon')
+    """
+    path_queue.put(path_name)
+
+
 # --- Main Entry Point ---
 ydotool_proc = StartYdotool()
 
+
 if ydotool_proc:
-    # Start BOTH threads
+    # Start threads
     scanner_thread = threading.Thread(target=BuffScannerThread, daemon=True)
     macro_thread = threading.Thread(target=MacroLoop, daemon=True)
     
@@ -170,7 +273,7 @@ if ydotool_proc:
     macro_thread.start()
     
     try:
-        # Keep the main thread alive for the GUI
+        # Keep main thread alive for GUI
         while gui.running:
             gui.Render()
             time.sleep(0.01)
@@ -178,8 +281,8 @@ if ydotool_proc:
         gui.running = False
     finally:
         print("Cleaning up...")
-        gui.playing = False  # Stop both loops
-        time.sleep(0.3)      # Give threads time to finish
+        gui.playing = False
+        time.sleep(0.3)
         ydotool_proc.terminate()
         print("Done.")
 else:

@@ -97,7 +97,9 @@ def Cannon_dandelion():
     time.sleep(0.1)
     keys.press('space')
     keys.hold('a', 1)
+    keys.hold('w', 1)
     keys.press('space')
+    time.sleep(3)
     
         
 def Cannon_pine():
@@ -119,7 +121,160 @@ def Cannon_pine():
     time.sleep(1)
     keys.key_up('w')
     keys.key_up('a')
-    time.sleep(3.5)
+    time.sleep(5)
+
+
+def Cannon_sunflower():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
 
 
 
+def Cannon_clover():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_mushroom():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_blueflower():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_strawberry():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_spider():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_bamboo():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_pineapple():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_stump():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_pumpkin():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_cactus():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
+
+
+def Cannon_mountain():
+
+    global rotation
+
+    for i in range(0, 4):
+        keys.press('>')
+        rotation += 45
+
+    time.sleep(0.5)
+    keys.press('e')
+    
