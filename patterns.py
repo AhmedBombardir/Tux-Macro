@@ -73,12 +73,45 @@ def Stationary():
     keys.lmb_down()
     patternFinished = True
 
-def E_lol():
-    global patternFinished
 
+def E_lol(spacing=40, reps=3, size=0.1):
+    """
+    Customizable version - możesz podać parametry
+    Usage: SnakePatternCustom(spacing=183, reps=4, size=1.2)
+    """
+    global patternFinished
     patternFinished = False
-    keys.hold('w', 0.25)
-    keys.hold('d', 0.25)
-    keys.hold('s', 0.25)
-    keys.hold('a', 0.25)
+    
+    facing_corner = 1
+    
+    keys.lmb_down()
+    
+    # First half
+    keys.key_down('a')
+    keys.wait(spacing * 9 / 2000 * (reps * 2 + 1))
+    keys.key_up('a')
+    
+    keys.hold('s', 5 * size)
+    
+    for _ in range(reps):
+        keys.hold('d', spacing * 9 / 2000)
+        keys.hold('w', 5 * size)
+        keys.hold('d', spacing * 9 / 2000)
+        keys.hold('s', (1094 + 25 * facing_corner) * 9 / 2000 * size)
+    
+    # Second half
+    keys.key_down('a')
+    keys.wait(spacing * 9 / 2000 * (reps * 2 + 0.5))
+    keys.key_up('a')
+    
+    keys.hold('w', 5 * size)
+    
+    for _ in range(reps):
+        keys.hold('d', spacing * 9 / 2000)
+        keys.hold('s', (1094 + 25 * facing_corner) * 9 / 2000 * size)
+        keys.hold('d', spacing * 9 / 2000 * 1.5)
+        keys.hold('w', 5 * size)
+    
     patternFinished = True
+    time.sleep(0.2)
+    keys.lmb_up()

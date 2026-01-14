@@ -81,12 +81,8 @@ def OnPatternChange(pattern_name):
 
 def OnFieldChange(field_name):
     settings.field = field_name
-    print(f" Field changed to: {field_name}")
+    print(f"[GUI] Field changed to: {field_name}")
 
-    path_name = main.FIELD_TO_PATH.get(field_name)
-    if path_name:
-        print(f" Queuing path: {path_name}")
-        main.DoPath(path_name)
 
 #------------------------------------------------------------------
 # DROPDOWNS WITH CALLBACKS
