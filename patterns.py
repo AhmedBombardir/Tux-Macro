@@ -3,7 +3,7 @@ import time
 
 '''CORNER_X_SNAKE = [
     ("hold", "w", 2.0),
-    ("wait", None, 0.05),  # <- krótka przerwa żeby puścić klawisz
+    ("wait", None, 0.05),
     
     ("hold", "a", 2.0),
     ("wait", None, 0.05),
@@ -76,7 +76,7 @@ def Stationary():
 
 def E_lol(spacing=40, reps=3, size=0.1):
     """
-    Customizable version - możesz podać parametry
+    Customizable version
     Usage: SnakePatternCustom(spacing=183, reps=4, size=1.2)
     """
     global patternFinished
