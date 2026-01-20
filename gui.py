@@ -99,7 +99,7 @@ field_dropdown = Dropdown(
     x=350, y=80, width=80, height=15,
     options=["Dandelion", "Clover", "Sunflower", "Mushroom", "Blue Flower", 
              "Strawberry", "Spider", "Bamboo", "Pineapple", "Stump", 
-             "Pine Tree", "Pumpkin", "Cactus", "Mountain", "Coconut", "Pepper"],
+             "Pine Tree", "Pumpkin", "Cactus", "Rose", "Mountain", "Coconut", "Pepper"],
     font=pygame.font.Font(None, 15),
     on_change=OnFieldChange  # Link callback
 )

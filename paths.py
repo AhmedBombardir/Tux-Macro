@@ -86,9 +86,9 @@ def Cannon():
     #keys.hold('w', 0.3)
     keys.press('space')
     time.sleep(0.1)
-    keys.hold('d', 0.1)
+    keys.hold('d', 0.4)
     time.sleep(0.25)
-    keys.hold('d', 0.25)
+    keys.hold('d', 0.2)
 
 
 
@@ -158,7 +158,7 @@ def Cannon_clover():
     keys.press('e')
     keys.wait(0.75)
     keys.hold('d', 1)
-    keys.wait(3)
+    (3)
     
 
 
@@ -256,7 +256,7 @@ def Cannon_bamboo():
         keys.press('>')
         rotation += 45
 
-    keys.wait(0.5)
+    time.sleep(0.5)
     keys.press('e')
     time.sleep(0.01)
     keys.hold('d', 0.4)
@@ -279,13 +279,14 @@ def Cannon_rose():
 
     time.sleep(0.5)
     keys.press('e')
-    time.sleep(0.1)
+    time.sleep(0.05)
     keys.hold('a', 0.4)
     keys.press('space')
-    time.sleep(0.2)
+    time.sleep(0.1)
     keys.press('space')
-    time.sleep(1)
+    time.sleep(3)
     keys.press('space')
+    time.sleep(3)
 
 def Cannon_pineapple():
 
@@ -297,6 +298,15 @@ def Cannon_pineapple():
 
     keys.wait(0.5)
     keys.press('e')
+    time.sleep(1.75)
+    keys.key_down('d')
+    keys.press('space')
+    time.sleep(0.08)
+    keys.press('space')
+    keys.key_up('d')
+    time.sleep(3.2)
+    keys.press('space')
+    time.sleep(3)
     
 
 
@@ -310,6 +320,15 @@ def Cannon_stump():
 
     keys.wait(0.5)
     keys.press('e')
+    time.sleep(1.75)
+    keys.key_down('d')
+    keys.press('space')
+    time.sleep(0.08)
+    keys.press('space')
+    keys.key_up('d')
+    time.sleep(2.5)
+    keys.hold('d', 2.5)
+    time.sleep(3)
     
 
 
@@ -321,8 +340,20 @@ def Cannon_pumpkin():
         keys.press('>')
         rotation += 45
 
-    keys.wait(0.5)
+    time.sleep(0.5)
     keys.press('e')
+
+    keys.key_down('w')
+    keys.key_down('a')
+    time.sleep(1.1150)
+    keys.press('space')
+    time.sleep(0.08)
+    keys.press('space')
+    time.sleep(3.25)
+    keys.key_up('w')
+    keys.key_up('a')
+    keys.press('space')
+    time.sleep(5)
     
 
 
@@ -336,7 +367,18 @@ def Cannon_cactus():
 
     keys.wait(0.5)
     keys.press('e')
-    
+
+    keys.key_down('w')
+    keys.key_down('a')
+    time.sleep(0.9)
+    keys.press('space')
+    time.sleep(0.08)
+    keys.press('space')
+    time.sleep(2.5)
+    keys.key_up('w')
+    keys.key_up('a')
+    keys.press('space')
+    time.sleep(5)
 
 
 def Cannon_mountain():

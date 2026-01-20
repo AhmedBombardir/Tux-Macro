@@ -38,6 +38,9 @@ capabilities = {
         e.BTN_LEFT,
         e.BTN_RIGHT,
         e.BTN_MIDDLE,
+        e.KEY_A, e.KEY_B, e.KEY_C, e.KEY_D, e.KEY_E,
+        e.KEY_F, e.KEY_G, e.KEY_H, e.KEY_I, e.KEY_J,
+        e.KEY_W, e.KEY_S, e.KEY_SPACE,
     ],
     e.EV_REL: [
         e.REL_X,
@@ -75,7 +78,7 @@ def press(key_name):
         print(f"Unknown key: {key_name}")
 
 
-def hold(key_name, duration=0.1):
+def hold(key_name, duration=0.1, adjusted=True):
     """
     Hold a key for specified duration.
     Automatically compensates for speed buffs and moveSpeed settings.
@@ -112,8 +115,10 @@ def hold(key_name, duration=0.1):
 def key_down(key_name):
     key = key_name.lower()
     if key in KEYS:
-        code = KEYS[key]
-        subprocess.run(['ydotool', 'key', f'{code}:1'])
+        key_code = getattr(e, f'KEY_{key.upper()}', None)
+        if key_code:
+            ui.write(e.EV_KEY, key_code, 1)
+            ui.syn()
     else:
         print(f"Unknown key: {key_name}")
 
@@ -121,8 +126,10 @@ def key_down(key_name):
 def key_up(key_name):
     key = key_name.lower()
     if key in KEYS:
-        code = KEYS[key]
-        subprocess.run(['ydotool', 'key', f'{code}:0'])
+        key_code = getattr(e, f'KEY_{key.upper()}', None)
+        if key_code:
+            ui.write(e.EV_KEY, key_code, 0)
+            ui.syn()
     else:
         print(f"Unknown key: {key_name}")
 

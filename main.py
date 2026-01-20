@@ -25,10 +25,13 @@ field_paths = {
     "Blue Flower": paths.Cannon_blueflower,
     "Pine Tree": paths.Cannon_pine,
     "Pineapple": paths.Cannon_pineapple,
+    "Pumpkin": paths.Cannon_pumpkin,
+    "Cactus": paths.Cannon_cactus,
     "Stump": paths.Cannon_stump,
     "Rose": paths.Cannon_rose,
     "Dandelion": paths.Cannon_dandelion,
-    "Sunflower": paths.Cannon_sunflower
+    "Sunflower": paths.Cannon_sunflower,
+    "Mountaint": paths.Cannon_mushroom,
 }
 
 def StartYdotool():
