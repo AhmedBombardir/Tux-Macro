@@ -60,8 +60,8 @@ def lmb_up():
     ui.syn()
 
 def move(dx, dy):
-    ui.write(e.EV_REL, e.REL_X, dx)
-    ui.write(e.EV_REL, e.REL_Y, dy)
+    ui.write(e.EV_REL, e.REL_X, int(dx))
+    ui.write(e.EV_REL, e.REL_Y, int(dy))
     ui.syn()
 
 def scroll(amount):

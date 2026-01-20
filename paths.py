@@ -3,10 +3,10 @@ import time
 import cv2 as cv
 import numpy as np
 import buff_detection
+import subprocess
+import settings
 
 #macro = bee.BeeSwarmMacro()
-
-
 
 
 rotation = 0
@@ -71,14 +71,34 @@ def Pepper():
     keys.hold('d', 5)
     
 
+def Reset():
+    global rotation
+
+    time.sleep(1)
+    keys.press('esc')
+    time.sleep(2)
+    keys.press('r')
+    time.sleep(0.5)
+    keys.press('enter')
+    time.sleep(3.5)
+    
+    for i in range(10):
+        keys.press('o')
+        time.sleep(0.01)
+    
+    rotation = 0
+    time.sleep(3)
 
 
 def Cannon():
 
     global rotation
+    rotation = 0
 
-    keys.hold('w', 1)
-    keys.hold('d', 3)
+
+    time.sleep(0.5)
+    keys.hold('w', 2.5)
+    keys.hold('d', 2 * settings.hiveSlot)
     keys.press('space')
     time.sleep(0.15)
     keys.hold('d', 1)
@@ -89,6 +109,7 @@ def Cannon():
     keys.hold('d', 0.4)
     time.sleep(0.25)
     keys.hold('d', 0.2)
+
 
 
 

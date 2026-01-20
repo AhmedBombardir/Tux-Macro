@@ -72,6 +72,44 @@ class UltraFastBuffScanner:
         if downscale:
             print("  - Using 50% downscaling (~2x faster)")
     
+
+    def check_image(self, template_name, threshold=None):
+        """
+        Check if single image exists on screen.
+        Returns: (found: bool, confidence: float, position: tuple)
+        """
+        if threshold is None:
+            threshold = self.threshold
+        
+        screen = self.capture.capture()
+        if screen is None:
+            return False, 0.0, None
+        
+        if template_name not in self.templates:
+            print(f"Template '{template_name}' not found")
+            return False, 0.0, None
+        
+        template = self.templates[template_name]
+        
+        # Convert to grayscale if needed
+        if self.use_grayscale:
+            screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+        
+        # Downscale if needed
+        if self.downscale:
+            screen = cv2.resize(screen, None, fx=0.5, fy=0.5,
+                              interpolation=cv2.INTER_AREA)
+        
+        res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
+        _, max_val, _, max_loc = cv2.minMaxLoc(res)
+        
+        if self.downscale:
+            max_loc = (max_loc[0] * 2, max_loc[1] * 2)
+        
+        found = max_val >= threshold
+        return found, float(max_val), max_loc if found else None
+
+
     def scan(self):
         """Ultra-fast scan with optimizations"""
         screen = self.capture.capture()

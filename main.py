@@ -1,5 +1,6 @@
 import gui, patterns, threading, time, subprocess, os, settings, re, paths
 from buff_detection import UltraFastBuffScanner
+import timers
 
 # Wayland socket configuration
 socket_path = "/run/user/1000/.ydotool_socket"
@@ -9,6 +10,7 @@ os.environ["YDOTOOL_SOCKET"] = socket_path
 buff_state = {
     'current_buffs': {},
     'speed_multiplier': 1.0,
+    'bear_morph_active': False,
     'lock': threading.Lock()
 }
 
@@ -33,6 +35,19 @@ field_paths = {
     "Sunflower": paths.Cannon_sunflower,
     "Mountaint": paths.Cannon_mushroom,
 }
+
+gatherTimer = timers.GatherTimer()
+
+region = {'x': 0, 'y': 0, 'width': 1920, 'height': 1080}  # full screen or adjust
+scanner = UltraFastBuffScanner(
+    templates_folder='Tux-Macro/images',
+    region=region,
+    threshold=0.9,
+    use_grayscale=False
+)
+
+# Make scanner accessible in paths module
+paths.scanner = scanner
 
 def StartYdotool():
     """ 
@@ -172,6 +187,11 @@ def BuffScannerThread():
         scanner.cleanup()
         print("[SCANNER] Thread stopped")
 
+def TimerThread():
+    timers.StartTimers()
+
+
+
 def MacroLoop():
     """
     Main movement loop - runs patterns continuously.
@@ -200,7 +220,17 @@ def MacroLoop():
 
                 time.sleep(5)
 
-                paths.Cannon()
+                found, confidence, pos = scanner.check_image('hive_respawn_day', 0.95)
+                if found:
+                    print(f"Hive found at {pos} with {confidence:.0%} confidence")
+                    paths.Cannon()
+                elif not found:
+                    found, confidence, pos = scanner.check_image('hive_respawn_night', 0.95)
+                else:
+                    paths.Reset()
+                    continue
+
+                
                 selected_field = settings.field
                 field_func = field_paths.get(selected_field)
 
@@ -211,14 +241,27 @@ def MacroLoop():
                     print(f"[ERROR No path found for field: {selected_field}")
 
                 paths_executed = True
+                gatherTimer.start()                
 
 
             elif current_pattern is None and paths_executed:
 
+                
                 current_pattern = settings.pattern
                 pattern_func = pattern_functions.get(current_pattern, patterns.CornerXSnake)
                 print(f"--- MACRO STARTED ({current_pattern}) ---")
             
+
+            # Check if gather time expired
+            if gatherTimer.is_expired():
+                print("[MACRO] Gather time finished!")
+                paths_executed = False
+                current_pattern = None
+                gatherTimer.reset()
+                paths.Reset()
+                continue
+
+
             # Get current speed multiplier from scanner thread
             with buff_state['lock']:
                 speed_mult = buff_state['speed_multiplier']
@@ -258,6 +301,7 @@ def MacroLoop():
             current_pattern = None
             initial_delay_done = False
             paths_executed = False
+            gatherTimer.reset()
             time.sleep(0.2)
     
     print("[MACRO] Thread stopped")
@@ -273,7 +317,7 @@ if ydotool_proc:
     # Start BOTH threads
     scanner_thread = threading.Thread(target=BuffScannerThread, daemon=True)
     macro_thread = threading.Thread(target=MacroLoop, daemon=True)
-    
+    timer_thread = threading.Thread(target=TimerThread, daemon=True)
     scanner_thread.start()
     macro_thread.start()
     
