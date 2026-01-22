@@ -4,15 +4,12 @@ import os
 import settings
 from evdev import UInput, ecodes as e
 
-# set socket path
 os.environ['YDOTOOL_SOCKET'] = '/tmp/.ydotool_socket'
 
 baseMoveSpeed = 31
 
-# This will be set by main.py
 buff_state = None
 
-#key codes
 KEYS = {
     'a': '30', 'b': '48', 'c': '46', 'd': '32', 'e': '18',
     'f': '33', 'g': '34', 'h': '35', 'i': '23', 'j': '36',
@@ -85,10 +82,20 @@ def hold(key_name, duration=0.1, adjusted=True):
     """
     key = key_name.lower()
     
-    # Get speed multiplier from settings (moveSpeed)
-    speed_multiplier = baseMoveSpeed / settings.moveSpeed
+    # CHANGED: Get effective movespeed (base + bear morph bonus)
+    effective_movespeed = settings.moveSpeed
+    if buff_state is not None:
+        try:
+            with buff_state['lock']:
+                if buff_state.get('bear_morph_active', False):
+                    effective_movespeed = settings.moveSpeed + 6
+        except:
+            pass
     
-    # Get buff speed multiplier (if available)
+    # Calculate speed multiplier based on effective movespeed
+    speed_multiplier = baseMoveSpeed / effective_movespeed
+    
+    # Get haste buff multiplier
     buff_speed = 1.0
     if buff_state is not None:
         try:
@@ -98,7 +105,6 @@ def hold(key_name, duration=0.1, adjusted=True):
             pass
     
     # Combine both multipliers
-    # If you have 1.3x speed buff, duration should be 1/1.3 = 0.77x shorter
     total_multiplier = speed_multiplier / buff_speed
     
     adjusted_duration = duration * total_multiplier
@@ -159,6 +165,20 @@ def wait(seconds):
     Wait for specified duration.
     Also compensates for speed buffs.
     """
+    # CHANGED: Get effective movespeed (base + bear morph bonus)
+    effective_movespeed = settings.moveSpeed
+    if buff_state is not None:
+        try:
+            with buff_state['lock']:
+                if buff_state.get('bear_morph_active', False):
+                    effective_movespeed = settings.moveSpeed + 6
+        except:
+            pass
+    
+    # Calculate speed multiplier based on effective movespeed
+    speed_multiplier = baseMoveSpeed / effective_movespeed
+    
+    # Get haste buff multiplier
     buff_speed = 1.0
     if buff_state is not None:
         try:
@@ -167,5 +187,8 @@ def wait(seconds):
         except:
             pass
     
-    adjusted_wait = seconds / buff_speed
+    # Combine both multipliers
+    total_multiplier = speed_multiplier / buff_speed
+    
+    adjusted_wait = seconds * total_multiplier
     time.sleep(adjusted_wait)

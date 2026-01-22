@@ -44,7 +44,7 @@ def CornerXSnake():
     keys.lmb_down()
     keys.key_down('w')
     keys.key_down('a')
-    time.sleep(2)
+    time.sleep(1.75)
     keys.key_up('w')
     keys.key_up('a')
     keys.hold('d', 1.5)
@@ -74,7 +74,7 @@ def Stationary():
     patternFinished = True
 
 
-def E_lol(spacing=40, reps=3, size=0.1):
+def E_lol(spacing=30, reps=1, size=0.125):
     """
     Customizable version
     Usage: SnakePatternCustom(spacing=183, reps=4, size=1.2)
@@ -86,6 +86,7 @@ def E_lol(spacing=40, reps=3, size=0.1):
     
     keys.lmb_down()
     
+    keys.hold('a', 0.25)
     # First half
     keys.key_down('a')
     keys.wait(spacing * 9 / 2000 * (reps * 2 + 1))

@@ -10,7 +10,7 @@ os.environ["YDOTOOL_SOCKET"] = socket_path
 buff_state = {
     'current_buffs': {},
     'speed_multiplier': 1.0,
-    'bear_morph_active': False,
+    'bear_morph_active': False,  # ADDED
     'lock': threading.Lock()
 }
 
@@ -38,7 +38,7 @@ field_paths = {
 
 gatherTimer = timers.GatherTimer()
 
-region = {'x': 0, 'y': 0, 'width': 1920, 'height': 1080}  # full screen or adjust
+region = {'x': 0, 'y': 0, 'width': 1920, 'height': 1080}
 scanner = UltraFastBuffScanner(
     templates_folder='Tux-Macro/images',
     region=region,
@@ -46,13 +46,8 @@ scanner = UltraFastBuffScanner(
     use_grayscale=False
 )
 
-# Make scanner accessible in paths module
-paths.scanner = scanner
 
 def StartYdotool():
-    """ 
-    Ensures ydotoold is running and the socket is accessible.
-    """
     print("Log: Re-starting ydotoold...")
     subprocess.run(["pkill", "-f", "ydotoold"], stderr=subprocess.DEVNULL)
     time.sleep(0.5)
@@ -70,7 +65,6 @@ def StartYdotool():
             stderr=subprocess.DEVNULL
         )
         
-        # Wait for socket readiness
         for _ in range(25):
             if os.path.exists(socket_path):
                 print(f"Log: ydotoold is READY at {socket_path}")
@@ -83,15 +77,10 @@ def StartYdotool():
         return None
 
 def BuffScannerThread():
-    """
-    Separate thread for CONTINUOUS buff scanning.
-    Runs independently from movement patterns.
-    """
     print("[SCANNER] Thread started, loading templates...")
     
     region = {'x': 0, 'y': 0, 'width': 450, 'height': 200}
     
-    # This loads templates - happens in background thread, doesn't block GUI
     scanner = UltraFastBuffScanner(
         templates_folder='Tux-Macro/images',
         region=region,
@@ -109,13 +98,10 @@ def BuffScannerThread():
                 try:  
                     scan_start = time.perf_counter()
                     
-                    # Scan for buffs
                     found_buffs = scanner.scan()
                     
-                    # Filter to best match per buff type (e.g., only one "haste" even if haste1, haste5 detected)
                     best_buffs = {}
                     for buff_name, data in found_buffs.items():
-                        # Extract buff type without numbers: "haste5" -> "haste"
                         buff_type = ''.join([c for c in buff_name if not c.isdigit()])
                         
                         if buff_type not in best_buffs or data['confidence'] > best_buffs[buff_type]['confidence']:
@@ -125,40 +111,45 @@ def BuffScannerThread():
                                 'position': data['position']
                             }
                     
-                    # Calculate speed multiplier based on haste LEVEL
+                    # CHANGED: Check for bear morph first
+                    bear_morph_active = False
+                    for buff_type, data in best_buffs.items():
+                        buff_name = data['name'].lower()
+                        if 'bear_morph' in buff_name:
+                            bear_morph_active = True
+                            break
+                    
+                    # CHANGED: Calculate speed multiplier based on haste
                     speed_multiplier = 1.0
                     
                     for buff_type, data in best_buffs.items():
                         buff_name = data['name'].lower()
                         
                         if 'haste' in buff_name:
-                            # Extract number: haste7 -> 7, haste10 -> 10
                             match = re.search(r'haste(\d+)', buff_name)
                             if match:
                                 haste_level = int(match.group(1))
-                                # haste1=1.1x, haste5=1.5x, haste10=2.0x
                                 speed_multiplier = 1.0 + (haste_level * 0.1)
                             else:
-                                # If no number found (just "haste"), assume level 1
                                 speed_multiplier = 1.1
                             break
                         elif 'expedition' in buff_name:
-                            # Expedition might have its own multiplier
-                            speed_multiplier = 1.25  # Adjust if different
+                            speed_multiplier = 1.25
                             break
                     
-                    # Update shared state (thread-safe)
+                    # CHANGED: Update shared state with bear morph
                     with buff_state['lock']:
                         buff_state['current_buffs'] = best_buffs
                         buff_state['speed_multiplier'] = speed_multiplier
+                        buff_state['bear_morph_active'] = bear_morph_active
                     
-                    # Print buff info with speed multiplier
+                    # Print buff info
                     if best_buffs:
                         output = " | ".join([f"{data['name']} ({data['confidence']:.0%})" 
                                            for data in best_buffs.values()])
-                        print(f"[SCAN] {output} → Speed: {speed_multiplier:.2f}x")
+                        morph_str = " + Bear Morph (+6 MS)" if bear_morph_active else ""
+                        print(f"[SCAN] {output}{morph_str} → Speed: {speed_multiplier:.2f}x")
                     
-                    # Performance tracking
                     scan_time = time.perf_counter() - scan_start
                     frame_times.append(scan_time)
                     scan_count += 1
@@ -166,20 +157,18 @@ def BuffScannerThread():
                     if len(frame_times) > 30:
                         frame_times.pop(0)
                     
-                    # Print FPS every 30 scans
                     if scan_count % 30 == 0:
                         avg_time = sum(frame_times) / len(frame_times)
                         avg_fps = 1.0 / avg_time if avg_time > 0 else 0
                         print(f"[SCANNER] FPS: {avg_fps:.1f} | Scan time: {avg_time*1000:.1f}ms")
                     
-                    # Target ~5-10 scans per second (adjust as needed)
-                    time.sleep(max(0.001, 0.1 - scan_time))  # Aim for 10 Hz
+                    time.sleep(max(0.001, 0.1 - scan_time))
                 
                 except Exception as e:
                     print(f"[SCANNER] Error in scan loop: {e}")
                     import traceback
                     traceback.print_exc()
-                    time.sleep(0.5)  # Pause before retry
+                    time.sleep(0.5)
             else:
                 time.sleep(0.2)
     
@@ -193,10 +182,6 @@ def TimerThread():
 
 
 def MacroLoop():
-    """
-    Main movement loop - runs patterns continuously.
-    Reads buff state from scanner thread.
-    """
     pattern_functions = {
         "CornerXSnake": patterns.CornerXSnake,
         "E_lol": patterns.E_lol,
@@ -209,7 +194,6 @@ def MacroLoop():
     
     print("[MACRO] Thread started")
     
-    # Wait for ydotoold to fully stabilize (in background thread, doesn't block GUI)
     print("[MACRO] Waiting for ydotoold to stabilize...")
     time.sleep(2)
     print("[MACRO] Ready!")
@@ -220,13 +204,28 @@ def MacroLoop():
 
                 time.sleep(5)
 
-                found, confidence, pos = scanner.check_image('hive_respawn_day', 0.95)
+                # In MacroLoop, change this:
+                found = False
+                confidence = 0.0
+                pos = None
+
+                for template in ['hive_respawn_day', 'hive_respawn_night']:
+                    found, confidence, pos = scanner.check_image(template, 0.9)
+                    
+                    print(f"[DEBUG] Checking {template}: found={found}, confidence={confidence:.2%}")
+                    
+                    if found:
+                        print(f"Hive found ({template}) at {pos} with {confidence:.0%} confidence")
+                        break
+
+                paths.Reset_p2()
+
+
                 if found:
-                    print(f"Hive found at {pos} with {confidence:.0%} confidence")
                     paths.Cannon()
-                elif not found:
-                    found, confidence, pos = scanner.check_image('hive_respawn_night', 0.95)
+
                 else:
+                    print("Hive not found, resetting...")
                     paths.Reset()
                     continue
 
@@ -238,21 +237,19 @@ def MacroLoop():
                     print(f"[MACRO] Executing: {selected_field} path")
                     field_func()
                 else:
-                    print(f"[ERROR No path found for field: {selected_field}")
+                    print(f"[ERROR] No path found for field: {selected_field}")
 
                 paths_executed = True
+                keys.press('1')
                 gatherTimer.start()                
 
 
             elif current_pattern is None and paths_executed:
-
-                
                 current_pattern = settings.pattern
                 pattern_func = pattern_functions.get(current_pattern, patterns.CornerXSnake)
                 print(f"--- MACRO STARTED ({current_pattern}) ---")
             
 
-            # Check if gather time expired
             if gatherTimer.is_expired():
                 print("[MACRO] Gather time finished!")
                 paths_executed = False
@@ -262,36 +259,30 @@ def MacroLoop():
                 continue
 
 
-            # Get current speed multiplier from scanner thread
             with buff_state['lock']:
                 speed_mult = buff_state['speed_multiplier']
                 active_buffs = list(buff_state['current_buffs'].keys())
             
-            # Display speed info occasionally
             if speed_mult > 1.0 and active_buffs:
                 print(f"[MACRO] Speed boost active: {speed_mult:.1f}x (Buffs: {active_buffs})")
             
-            # Execute movement pattern
             try:
                 pattern_func()
             except Exception as e:
                 if gui.playing:
                     print(f"Movement Warning: {e}")
-                # IMPORTANT: Release LMB if pattern crashes
                 try:
                     keys.lmb_up()
                 except:
                     pass
             
-            # Small delay between pattern executions
             time.sleep(0.01)
         else:
-            # Reset when macro stops
             if current_pattern is not None or paths_executed:
                 print("[MACRO] Stopping - releasing all keys...")
                 try:
-                    keys.lmb_up()  # Release mouse
-                    keys.key_up('w')  # Release all possible keys
+                    keys.lmb_up()
+                    keys.key_up('w')
                     keys.key_up('a')
                     keys.key_up('s')
                     keys.key_up('d')
@@ -310,11 +301,9 @@ def MacroLoop():
 ydotool_proc = StartYdotool()
 
 if ydotool_proc:
-    # IMPORTANT: Give ydotoold time to fully initialize
     print("Waiting for ydotoold to stabilize...")
-    time.sleep(2)  # Wait 2 seconds before starting threads
+    time.sleep(2)
     
-    # Start BOTH threads
     scanner_thread = threading.Thread(target=BuffScannerThread, daemon=True)
     macro_thread = threading.Thread(target=MacroLoop, daemon=True)
     timer_thread = threading.Thread(target=TimerThread, daemon=True)
@@ -322,7 +311,6 @@ if ydotool_proc:
     macro_thread.start()
     
     try:
-        # Keep the main thread alive for the GUI
         while gui.running:
             gui.Render()
             time.sleep(0.01)
@@ -330,10 +318,9 @@ if ydotool_proc:
         gui.running = False
     finally:
         print("Cleaning up...")
-        gui.playing = False  # Stop both loops
-        time.sleep(0.3)      # Give threads time to finish
+        gui.playing = False
+        time.sleep(0.3)
         
-        # Emergency cleanup - release all keys and mouse
         try:
             keys.lmb_up()
             keys.key_up('w')

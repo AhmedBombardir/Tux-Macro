@@ -76,17 +76,22 @@ def Reset():
 
     time.sleep(1)
     keys.press('esc')
-    time.sleep(2)
+    time.sleep(1)
     keys.press('r')
-    time.sleep(0.5)
+    time.sleep(0.25)
     keys.press('enter')
-    time.sleep(3.5)
+    time.sleep(3)
     
-    for i in range(10):
-        keys.press('o')
-        time.sleep(0.01)
+    
+    keys.press('o')
     
     rotation = 0
+ 
+
+def Reset_p2():
+
+    for i in range(6):
+        keys.press('o')
     time.sleep(3)
 
 
@@ -97,7 +102,7 @@ def Cannon():
 
 
     time.sleep(0.5)
-    keys.hold('w', 2.5)
+    keys.hold('w', 2)
     keys.hold('d', 2 * settings.hiveSlot)
     keys.press('space')
     time.sleep(0.15)
@@ -119,14 +124,14 @@ def Cannon_dandelion():
 
     time.sleep(0.5)
     keys.press('e')
-    keys.wait(0.5)
+    time.sleep(0.5)
     keys.press('space')
-    keys.wait(0.1)
+    time.sleep(0.1)
     keys.press('space')
-    keys.hold('a', 1.05)
-    keys.hold('w', 1.05)
+    keys.hold('a', 1.25)
+    keys.hold('w', 1)
     keys.press('space')
-    keys.wait(3)
+    time.sleep(3)
     
         
 def Cannon_pine():
@@ -148,7 +153,10 @@ def Cannon_pine():
     time.sleep(1)
     keys.key_up('w')
     keys.key_up('a')
-    time.sleep(5)
+    time.sleep(6)
+    keys.hold('s', 0.1)
+    keys.hold('d', 0.1)
+    time.sleep(1)
 
 
 def Cannon_sunflower():
@@ -159,12 +167,15 @@ def Cannon_sunflower():
         keys.press('>')
         rotation += 45
 
-    keys.wait(0.5)
+    time.sleep(0.5)
     keys.press('e')
-    keys.wait(0.5)
-    keys.hold('d', 0.5)
+    time.sleep(0.35)
     keys.press('space')
-    keys.wait(3)
+    time.sleep(0.08)
+    keys.press('space')
+    keys.hold('a', 1.1)
+    keys.press('space')
+    time.sleep(3)
 
 
 def Cannon_clover():
@@ -177,9 +188,14 @@ def Cannon_clover():
 
     keys.wait(0.5)
     keys.press('e')
-    keys.wait(0.75)
+    keys.wait(0.3)
+    keys.press('space')
+    time.sleep(0.08)
+    keys.press('space')
     keys.hold('d', 1)
-    (3)
+    time.sleep(3)
+    keys.press('space')
+    time.sleep(5)
     
 
 
@@ -236,13 +252,14 @@ def Cannon_strawberry():
 
     time.sleep(0.5)
     keys.press('e')
-    time.sleep(0.25)
+    time.sleep(0.5)
     keys.key_down('w')
     keys.press('space')
     time.sleep(0.08)
     keys.press('space')
     time.sleep(0.08)
-    time.sleep(2.5)
+    keys.hold('a', 0.9)
+    time.sleep(1.25)
     keys.key_up('w')
     keys.press('space')
     time.sleep(3)
@@ -374,7 +391,7 @@ def Cannon_pumpkin():
     keys.key_up('w')
     keys.key_up('a')
     keys.press('space')
-    time.sleep(5)
+    time.sleep(4)
     
 
 
@@ -399,7 +416,7 @@ def Cannon_cactus():
     keys.key_up('w')
     keys.key_up('a')
     keys.press('space')
-    time.sleep(5)
+    time.sleep(4)
 
 
 def Cannon_mountain():
@@ -412,4 +429,4 @@ def Cannon_mountain():
 
     keys.wait(0.5)
     keys.press('e')
-    
+    time.sleep(4)
