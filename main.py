@@ -79,16 +79,18 @@ def StartYdotool():
 def BuffScannerThread():
     print("[SCANNER] Thread started, loading templates...")
     
-    region = {'x': 0, 'y': 0, 'width': 450, 'height': 200}
+    region = {'x': 50, 'y': 0, 'width': 400, 'height': 200}
     
     scanner = UltraFastBuffScanner(
         templates_folder='Tux-Macro/images',
         region=region,
-        threshold=0.75
+        threshold=0.95,
+        use_grayscale=True
     )
     
     print("[SCANNER] Templates loaded, starting scan loop...")
-    
+    print(f"[SCANNER] Loaded templates: {list(scanner.templates.keys())}")
+
     frame_times = []
     scan_count = 0
     
@@ -240,7 +242,55 @@ def MacroLoop():
                     print(f"[ERROR] No path found for field: {selected_field}")
 
                 paths_executed = True
-                keys.press('1')
+
+
+                if settings.sprinkler=="Basic" or settings.sprinkler=="Supreme":
+                    keys.press('1')
+                elif settings.sprinkler=="Silver":
+                    keys.press('1')
+                    keys.hold('a', 0.5)
+                    keys.hold('w', 0.5)
+                    keys.press('space')
+                    time.sleep(0.5)
+                    keys.press('1')
+                    time.sleep(1)
+                    keys.hold('d', 0.5)
+                    keys.hold('s', 0.5)
+                elif settings.sprinkler=="Golden":
+                    keys.press('1')
+                    keys.hold('a', 0.5)
+                    keys.hold('w', 0.5)
+                    keys.press('space')
+                    time.sleep(0.5)
+                    keys.press('1')
+                    time.sleep(1)
+                    keys.hold('d', 0.5)
+                    keys.press('space')
+                    time.sleep(0.5)
+                    keys.press('1')
+                    time.sleep(1)
+                    keys.hold('s', 0.5)
+                elif settings.sprinkler=="Diamond":
+                    keys.press('1')
+                    keys.hold('a', 0.5)
+                    keys.hold('w', 0.5)
+                    keys.press('space')
+                    time.sleep(0.5)
+                    keys.press('1')
+                    time.sleep(1)
+                    keys.hold('d', 0.5)
+                    keys.press('space')
+                    time.sleep(0.5)
+                    keys.press('1')
+                    time.sleep(1)
+                    keys.hold('s', 0.5)
+                    keys.hold('a', 0.5)
+                    keys.press('space')
+                    time.sleep(0.5)
+                    keys.press('1')
+                    time.sleep(1)
+                    keys.hold('d', 0.5)
+
                 gatherTimer.start()                
 
 

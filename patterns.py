@@ -87,6 +87,7 @@ def E_lol(spacing=30, reps=1, size=0.125):
     keys.lmb_down()
     
     keys.hold('a', 0.25)
+    
     # First half
     keys.key_down('a')
     keys.wait(spacing * 9 / 2000 * (reps * 2 + 1))
