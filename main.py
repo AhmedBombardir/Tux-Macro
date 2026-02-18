@@ -10,7 +10,14 @@ os.environ["YDOTOOL_SOCKET"] = socket_path
 buff_state = {
     'current_buffs': {},
     'speed_multiplier': 1.0,
-    'bear_morph_active': False,  # ADDED
+    'bear_morph_active': False,
+    'lock': threading.Lock()
+}
+
+# Bug run state
+bug_run_state = {
+    'active': False,
+    'current_bug': None,
     'lock': threading.Lock()
 }
 
@@ -34,17 +41,30 @@ field_paths = {
     "Dandelion": paths.Cannon_dandelion,
     "Sunflower": paths.Cannon_sunflower,
     "Mountaint": paths.Cannon_mushroom,
+    "Pepper": paths.Pepper,
+}
+
+# Bug kill paths mapping
+bug_paths = {
+    "werewolf": paths.Cannon_pumpkin,
+    "mantis": paths.Cannon_pine,
+    "scorpion": paths.Cannon_rose,
+    "beetle": [paths.Cannon_clover, paths.Cannon_blueflower, paths.Cannon_bamboo, paths.Cannon_pineapple],
+    "ladybug": [paths.Cannon_strawberry, paths.Cannon_mushroom, paths.Cannon_clover],
+    "spider": paths.Cannon_spider,
 }
 
 gatherTimer = timers.GatherTimer()
+bugTimer = timers.BugTimer()
 
 region = {'x': 0, 'y': 0, 'width': 1920, 'height': 1080}
 scanner = UltraFastBuffScanner(
-    templates_folder='Tux-Macro/images',
+    templates_folder='images',
     region=region,
     threshold=0.9,
     use_grayscale=False
 )
+
 
 
 def StartYdotool():
@@ -82,7 +102,7 @@ def BuffScannerThread():
     region = {'x': 50, 'y': 0, 'width': 400, 'height': 200}
     
     scanner = UltraFastBuffScanner(
-        templates_folder='Tux-Macro/images',
+        templates_folder='images',
         region=region,
         threshold=0.95,
         use_grayscale=True
@@ -113,7 +133,7 @@ def BuffScannerThread():
                                 'position': data['position']
                             }
                     
-                    # CHANGED: Check for bear morph first
+                    # Check for bear morph first
                     bear_morph_active = False
                     for buff_type, data in best_buffs.items():
                         buff_name = data['name'].lower()
@@ -121,7 +141,7 @@ def BuffScannerThread():
                             bear_morph_active = True
                             break
                     
-                    # CHANGED: Calculate speed multiplier based on haste
+                    # Calculate speed multiplier based on haste
                     speed_multiplier = 1.0
                     
                     for buff_type, data in best_buffs.items():
@@ -139,7 +159,7 @@ def BuffScannerThread():
                             speed_multiplier = 1.25
                             break
                     
-                    # CHANGED: Update shared state with bear morph
+                    # Update shared state with bear morph
                     with buff_state['lock']:
                         buff_state['current_buffs'] = best_buffs
                         buff_state['speed_multiplier'] = speed_multiplier
@@ -178,9 +198,191 @@ def BuffScannerThread():
         scanner.cleanup()
         print("[SCANNER] Thread stopped")
 
-def TimerThread():
-    timers.StartTimers()
 
+def KillBug(bug_name):
+    """Execute bug kill sequence"""
+    print(f"[KILL] Starting {bug_name} kill sequence...")
+    
+    # CRITICAL: Stop all movement before bug run
+    print(f"[KILL] Stopping all movement...")
+    try:
+        keys.lmb_up()
+        keys.key_up('w')
+        keys.key_up('a')
+        keys.key_up('s')
+        keys.key_up('d')
+    except:
+        pass
+    
+    time.sleep(0.5)  # Let keys release properly
+    
+    with bug_run_state['lock']:
+        bug_run_state['active'] = True
+        bug_run_state['current_bug'] = bug_name
+    
+    try:
+        print(f"[KILL] Resetting position...")
+        paths.Reset()
+        time.sleep(1)
+        paths.Reset_p2()
+        time.sleep(2)
+        print(f"[KILL] Cannon sequence...")
+        paths.Cannon()
+        time.sleep(0.5)
+        
+        
+        bug_path = bug_paths.get(bug_name)
+        
+        if bug_path:
+            if isinstance(bug_path, list):
+                # Multiple locations (beetle, ladybug)
+                print(f"[KILL] {bug_name} has {len(bug_path)} locations")
+                for idx, path_func in enumerate(bug_path, 1):
+                    print(f"[KILL] Location {idx}/{len(bug_path)}...")
+                    path_func()
+                    time.sleep(0.5)
+                    if idx < len(bug_path):  # Don't reset after last one
+                        paths.Reset()
+                        time.sleep(1)
+                        paths.Reset_p2()
+                        time.sleep(2)
+                        paths.Cannon()
+                        time.sleep(0.5)
+            else:
+                # Single location
+                print(f"[KILL] Executing {bug_name} path...")
+                bug_path()
+                time.sleep(0.5)
+            
+            print(f"[KILL] Final reset...")
+            paths.Reset()
+            time.sleep(1)
+            print(f"[KILL] {bug_name} kill sequence completed!")
+        else:
+            print(f"[KILL] ERROR: No path found for {bug_name}")
+    
+    except Exception as e:
+        print(f"[KILL] ERROR during {bug_name} kill: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    finally:
+        # Release all keys again just to be safe
+        try:
+            keys.lmb_up()
+            keys.key_up('w')
+            keys.key_up('a')
+            keys.key_up('s')
+            keys.key_up('d')
+        except:
+            pass
+        
+        with bug_run_state['lock']:
+            bug_run_state['active'] = False
+            bug_run_state['current_bug'] = None
+
+
+def TimerThread():
+    """Monitor bug timers and trigger kills"""
+    print("[TIMER] Thread started")
+    
+    gatherTimer.start()
+
+    # Check if bugs should be ready immediately or need to wait
+    bugs_ready_on_start = getattr(settings, 'bugs_ready_on_start', False)
+    
+    # Get respawn times from settings
+    bug_times = getattr(settings, 'bug_respawn_times', {
+        "ladybug": 120,
+        "beetle": 120,
+        "werewolf": 3600,
+        "mantis": 1200,
+        "scorpion": 1200,
+        "spider": 1800,
+    })
+    
+    if bugs_ready_on_start:
+        # Bugs are ready immediately - set timers as already expired
+        print("[TIMER] Bugs are READY on start - initial clear will happen in MacroLoop")
+        
+        # Initialize timers but with start_time set to way in the past so is_ready() returns True
+        for bug_name, duration in bug_times.items():
+            bugTimer.timers[bug_name] = {
+                'start_time': time.time() - (duration + 1),  # Already expired
+                'duration': duration
+            }
+    else:
+        # Initialize bug timers - start with full duration (NOT ready immediately)
+        print("[TIMER] Bug timers initialized - bugs will be ready after their respawn times:")
+        print(f"  - Ladybug & Beetle: 2 minutes")
+        print(f"  - Mantis & Scorpion: 20 minutes")
+        print(f"  - Spider: 30 minutes")
+        print(f"  - Werewolf: 1 hour")
+        
+        for bug_name, duration in bug_times.items():
+            bugTimer.start(bug_name, duration)
+
+    while gui.running:
+        time.sleep(1)
+        
+        if not gui.playing:
+            continue
+        
+        # Check if currently in bug run
+        with bug_run_state['lock']:
+            in_bug_run = bug_run_state['active']
+        
+        if in_bug_run:
+            continue
+        
+        # Check gather interrupt setting
+        gather_interrupt = getattr(settings, 'gather_interrupt', True)
+        
+        # Check if we're currently gathering
+        is_gathering = not gatherTimer.is_expired()
+        
+        # If gather interrupt is OFF and we're gathering, skip bug checks
+        if not gather_interrupt and is_gathering:
+            continue
+        
+        # Check each bug timer
+        bugs_to_kill = []
+        
+        if bugTimer.is_ready("werewolf"):
+            bugs_to_kill.append("werewolf")
+        
+        if bugTimer.is_ready("mantis"):
+            bugs_to_kill.append("mantis")
+        
+        if bugTimer.is_ready("scorpion"):
+            bugs_to_kill.append("scorpion")
+        
+        if bugTimer.is_ready("beetle"):
+            bugs_to_kill.append("beetle")
+        
+        if bugTimer.is_ready("ladybug"):
+            bugs_to_kill.append("ladybug")
+        
+        if bugTimer.is_ready("spider"):
+            bugs_to_kill.append("spider")
+        
+        # Execute kills for ready bugs
+        for bug_name in bugs_to_kill:
+            if not gui.playing:
+                break
+            
+            print(f"[TIMER] {bug_name.upper()} is ready!")
+            
+            # If gather interrupt is ON, interrupt gathering
+            if gather_interrupt and is_gathering:
+                print("[TIMER] Interrupting gather for bug run...")
+            
+            KillBug(bug_name)
+            
+            # Reset the bug timer
+            bugTimer.start(bug_name, bugTimer.timers[bug_name]['duration'])
+    
+    print("[TIMER] Thread stopped")
 
 
 def MacroLoop():
@@ -192,7 +394,7 @@ def MacroLoop():
     
     current_pattern = None
     paths_executed = False
-
+    initial_bug_clear_done = False  # NEW: Track if we did initial bug clear
     
     print("[MACRO] Thread started")
     
@@ -202,11 +404,47 @@ def MacroLoop():
     
     while gui.running:
         if gui.playing:
+            # Check if bug run is active
+            with bug_run_state['lock']:
+                in_bug_run = bug_run_state['active']
+            
+            if in_bug_run:
+                # Pause macro during bug runs
+                current_pattern = None
+                paths_executed = False
+                time.sleep(0.1)
+                continue
+            
+            # NEW: Check if we need to do initial bug clear
+            if not initial_bug_clear_done:
+                bugs_ready_on_start = getattr(settings, 'bugs_ready_on_start', False)
+                
+                if bugs_ready_on_start:
+                    print("[MACRO] bugs_ready_on_start = True, clearing all bugs before first gather...")
+                    time.sleep(2)
+                    
+                    # Kill all bugs that are marked as ready
+                    bugs_to_clear = ["ladybug", "beetle", "spider", "werewolf", "mantis", "scorpion"]
+                    
+                    for bug_name in bugs_to_clear:
+                        if not gui.playing:
+                            break
+                        
+                        print(f"[MACRO] Initial clear: {bug_name.upper()}")
+                        KillBug(bug_name)
+                        
+                        # Restart timer after killing (timers already exist from TimerThread)
+                        if bug_name in bugTimer.timers:
+                            bugTimer.start(bug_name, bugTimer.timers[bug_name]['duration'])
+                    
+                    print("[MACRO] Initial bug clear complete! Starting normal macro...")
+                
+                initial_bug_clear_done = True
+            
             if current_pattern is None and not paths_executed:
-
                 time.sleep(5)
 
-                # In MacroLoop, change this:
+                # Check for hive
                 found = False
                 confidence = 0.0
                 pos = None
@@ -222,16 +460,14 @@ def MacroLoop():
 
                 paths.Reset_p2()
 
-
                 if found:
                     paths.Cannon()
-
                 else:
                     print("Hive not found, resetting...")
                     paths.Reset()
                     continue
 
-                
+                # Execute field path
                 selected_field = settings.field
                 field_func = field_paths.get(selected_field)
 
@@ -243,10 +479,10 @@ def MacroLoop():
 
                 paths_executed = True
 
-
-                if settings.sprinkler=="Basic" or settings.sprinkler=="Supreme":
+                # Sprinkler logic
+                if settings.sprinkler == "Basic" or settings.sprinkler == "Supreme":
                     keys.press('1')
-                elif settings.sprinkler=="Silver":
+                elif settings.sprinkler == "Silver":
                     keys.press('1')
                     keys.hold('a', 0.5)
                     keys.hold('w', 0.5)
@@ -256,21 +492,7 @@ def MacroLoop():
                     time.sleep(1)
                     keys.hold('d', 0.5)
                     keys.hold('s', 0.5)
-                elif settings.sprinkler=="Golden":
-                    keys.press('1')
-                    keys.hold('a', 0.5)
-                    keys.hold('w', 0.5)
-                    keys.press('space')
-                    time.sleep(0.5)
-                    keys.press('1')
-                    time.sleep(1)
-                    keys.hold('d', 0.5)
-                    keys.press('space')
-                    time.sleep(0.5)
-                    keys.press('1')
-                    time.sleep(1)
-                    keys.hold('s', 0.5)
-                elif settings.sprinkler=="Diamond":
+                elif settings.sprinkler == "Golden":
                     keys.press('1')
                     keys.hold('a', 0.5)
                     keys.hold('w', 0.5)
@@ -284,6 +506,20 @@ def MacroLoop():
                     keys.press('1')
                     time.sleep(1)
                     keys.hold('s', 0.5)
+                elif settings.sprinkler == "Diamond":
+                    keys.press('1')
+                    keys.hold('a', 0.5)
+                    keys.hold('w', 0.5)
+                    keys.press('space')
+                    time.sleep(0.5)
+                    keys.press('1')
+                    time.sleep(1)
+                    keys.hold('d', 0.5)
+                    keys.press('space')
+                    time.sleep(0.5)
+                    keys.press('1')
+                    time.sleep(1)
+                    keys.hold('s', 0.5)
                     keys.hold('a', 0.5)
                     keys.press('space')
                     time.sleep(0.5)
@@ -291,14 +527,12 @@ def MacroLoop():
                     time.sleep(1)
                     keys.hold('d', 0.5)
 
-                gatherTimer.start()                
-
+                gatherTimer.start()
 
             elif current_pattern is None and paths_executed:
                 current_pattern = settings.pattern
                 pattern_func = pattern_functions.get(current_pattern, patterns.CornerXSnake)
                 print(f"--- MACRO STARTED ({current_pattern}) ---")
-            
 
             if gatherTimer.is_expired():
                 print("[MACRO] Gather time finished!")
@@ -308,23 +542,28 @@ def MacroLoop():
                 paths.Reset()
                 continue
 
-
-            with buff_state['lock']:
-                speed_mult = buff_state['speed_multiplier']
-                active_buffs = list(buff_state['current_buffs'].keys())
-            
-            if speed_mult > 1.0 and active_buffs:
-                print(f"[MACRO] Speed boost active: {speed_mult:.1f}x (Buffs: {active_buffs})")
-            
-            try:
-                pattern_func()
-            except Exception as e:
-                if gui.playing:
-                    print(f"Movement Warning: {e}")
-                try:
-                    keys.lmb_up()
-                except:
-                    pass
+            # Only execute pattern if we have one AND not in bug run
+            if current_pattern is not None:
+                with bug_run_state['lock']:
+                    in_bug_run = bug_run_state['active']
+                
+                if not in_bug_run:
+                    with buff_state['lock']:
+                        speed_mult = buff_state['speed_multiplier']
+                        active_buffs = list(buff_state['current_buffs'].keys())
+                    
+                    if speed_mult > 1.0 and active_buffs:
+                        print(f"[MACRO] Speed boost active: {speed_mult:.1f}x (Buffs: {active_buffs})")
+                    
+                    try:
+                        pattern_func()
+                    except Exception as e:
+                        if gui.playing:
+                            print(f"Movement Warning: {e}")
+                        try:
+                            keys.lmb_up()
+                        except:
+                            pass
             
             time.sleep(0.01)
         else:
@@ -340,8 +579,8 @@ def MacroLoop():
                     pass
             
             current_pattern = None
-            initial_delay_done = False
             paths_executed = False
+            initial_bug_clear_done = False  # Reset on stop
             gatherTimer.reset()
             time.sleep(0.2)
     
@@ -357,8 +596,10 @@ if ydotool_proc:
     scanner_thread = threading.Thread(target=BuffScannerThread, daemon=True)
     macro_thread = threading.Thread(target=MacroLoop, daemon=True)
     timer_thread = threading.Thread(target=TimerThread, daemon=True)
+    
     scanner_thread.start()
     macro_thread.start()
+    timer_thread.start()
     
     try:
         while gui.running:

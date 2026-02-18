@@ -70,6 +70,7 @@ def Pepper():
     keys.press('space')
     keys.hold('d', 5)
     
+    
 
 def Reset():
     global rotation
@@ -186,14 +187,17 @@ def Cannon_clover():
         keys.press('>')
         rotation += 45
 
-    keys.wait(0.5)
+    time.sleep(0.5)
     keys.press('e')
-    keys.wait(0.3)
+    time.sleep(1)
     keys.press('space')
     time.sleep(0.08)
     keys.press('space')
-    keys.hold('d', 1)
+    keys.key_down('s')
+    keys.key_down('d')
     time.sleep(3)
+    keys.key_up('s')
+    keys.key_up('d')
     keys.press('space')
     time.sleep(5)
     
@@ -274,7 +278,7 @@ def Cannon_spider():
         keys.press('>')
         rotation += 45
 
-    timess(0.5)
+    time.sleep(0.5)
     keys.press('e')
 
     time.sleep(1.5)

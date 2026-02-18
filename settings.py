@@ -1,13 +1,32 @@
 import gui
 
-# set the gather time in seconds for example: 10 minutes - gatherTime = 600
-gatherTime = 6000
-# set your ingame movespeed
-moveSpeed = 29
-# set your hive slot (1-6)
-hiveSlot = 5
+# Field selection
+field = "Clover"  # Options: Clover, Mushroom, Spider, Bamboo, Strawberry, Blue Flower, Pine Tree, Pineapple, Pumpkin, Cactus, Stump, Rose, Dandelion, Sunflower, Pepper
 
-sprinkler = "Supreme"
-# field and pattern are just the default settings, you are able to select them in the macro
-field = "Dandelion"
-pattern = "CornerXSnake"
+# Gather pattern
+pattern = "CornerXSnake"  # Options: CornerXSnake, E_lol, Stationary
+
+# Gather time (in seconds)
+gatherTime = 300  # 5 minutes
+
+# Sprinkler type
+sprinkler = "Basic"  # Options: Basic, Silver, Golden, Diamond, Supreme
+
+# Hive slot (1-6)
+hiveSlot = 1
+
+# Movespeed
+moveSpeed = 29
+
+# Bug Kill Settings
+gather_interrupt = False  # If True, macro will interrupt gathering to kill bugs. If False, waits until gather finishes.
+
+# Bug respawn times (in seconds) - default values
+bug_respawn_times = {
+    "ladybug": 120,      # 2 minutes
+    "beetle": 120,       # 2 minutes
+    "werewolf": 3600,    # 1 hour
+    "mantis": 1200,      # 20 minutes
+    "scorpion": 1200,    # 20 minutes
+    "spider": 1800,      # 30 minutes
+}
