@@ -418,16 +418,16 @@ robo_pass_cb = CheckBox(120, 60, 15,15, on_change=OnCheck)
 
 
 collect_tab.add_element(wealth_clock, 15, 40)
-collect_tab.add_element(wealth_clock_cb, 120, 40)
+collect_tab.add_element(wealth_clock_cb, 15 + 90, 40)
 
 collect_tab.add_element(mondo, 15, 60)
-collect_tab.add_element(mondo_cb, 120, 60)
+collect_tab.add_element(mondo_cb, 15 + 90, 60)
 
 collect_tab.add_element(ant_pass, 15, 80)
-collect_tab.add_element(ant_pass_cb, 120, 80)
+collect_tab.add_element(ant_pass_cb, 15 + 90, 80)
 
 collect_tab.add_element(robo_pass, 15, 100)
-collect_tab.add_element(robo_pass_cb, 120, 100)
+collect_tab.add_element(robo_pass_cb, 15 + 90, 100)
 
 # ---------- Dispensers ----------
 
@@ -481,12 +481,12 @@ collect_tab.add_element(stockings, 15, 160)
 collect_tab.add_element(wreath, 15, 180)
 collect_tab.add_element(feast, 15, 200)
 collect_tab.add_element(robo_party, 15, 220)
-collect_tab.add_element(gingerbread, 160, 160)
-collect_tab.add_element(snow_machine, 160, 180)
-collect_tab.add_element(candles, 160, 200)
-collect_tab.add_element(samovar, 325, 160)
-collect_tab.add_element(lid_art, 325, 180)
-collect_tab.add_element(gummy_beacon, 325, 200)
+collect_tab.add_element(gingerbread, 140, 160)
+collect_tab.add_element(snow_machine, 140, 180)
+collect_tab.add_element(candles, 140, 200)
+collect_tab.add_element(samovar, 265, 160)
+collect_tab.add_element(lid_art, 265, 180)
+collect_tab.add_element(gummy_beacon, 265, 200)
 
 
 stockings_cb = CheckBox(on_change=OnCheck)
@@ -504,12 +504,12 @@ collect_tab.add_element(stockings_cb, 15 + 90, 160)
 collect_tab.add_element(wreath_cb, 15 + 90, 180)
 collect_tab.add_element(feast_cb, 15 + 90, 200)
 collect_tab.add_element(robo_party_cb, 15 + 90, 220)
-collect_tab.add_element(gingerbread_cb, 160 + 90, 160)
-collect_tab.add_element(snow_machine_cb, 160 + 90, 180)
-collect_tab.add_element(candles_cb, 160 + 90, 200)
-collect_tab.add_element(samovar_cb, 325 + 90, 160)
-collect_tab.add_element(lid_art_cb, 325 + 90, 180)
-collect_tab.add_element(gummy_beacon_cb, 325 + 90, 200)
+collect_tab.add_element(gingerbread_cb, 140 + 90, 160)
+collect_tab.add_element(snow_machine_cb, 140 + 90, 180)
+collect_tab.add_element(candles_cb, 140 + 90, 200)
+collect_tab.add_element(samovar_cb, 265 + 90, 160)
+collect_tab.add_element(lid_art_cb, 265 + 90, 180)
+collect_tab.add_element(gummy_beacon_cb, 265 + 90, 200)
 
 
 
