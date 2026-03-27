@@ -1,65 +1,42 @@
-import settings
 import time
 
-class GatherTimer:
-    def __init__(self):
-        self.start_time = None
-        self.duration = settings.gatherTime
-    
-    def start(self):
-        self.start_time = time.time()
-    
-    def is_expired(self):
-        if self.start_time is None:
-            return False
-        elapsed = time.time() - self.start_time
-        return elapsed >= self.duration
-    
-    def reset(self):
-        self.start_time = None
 
-
-class BugTimer:
+class Timer:
     def __init__(self):
-        self.timers = {}  # {'bug_name': {'start_time': timestamp, 'duration': seconds}}
-    
-    def start(self, bug_name, duration):
-        """Start timer for specific bug"""
-        self.timers[bug_name] = {
+        self.timers = {}
+
+    def start_ready(self, name, duration):
+        """Start timer as already expired (ready immediately)"""
+        self.timers[name] = {
+            'start_time': time.time() - (duration + 1),
+            'duration': duration
+        }
+
+    def start(self, name, duration):
+        self.timers[name] = {
             'start_time': time.time(),
             'duration': duration
         }
-    
-    def is_ready(self, bug_name):
-        """Check if bug timer expired (bug respawned)"""
-        if bug_name not in self.timers:
-            return True  # No timer = bug is ready
-        
-        timer = self.timers[bug_name]
+
+    def is_ready(self, name):
+        if name not in self.timers:
+            return True
+        timer = self.timers[name]
         if timer['start_time'] is None:
             return True
-        
-        elapsed = time.time() - timer['start_time']
-        return elapsed >= timer['duration']
-    
-    def reset(self, bug_name):
-        """Reset specific bug timer"""
-        if bug_name in self.timers:
-            self.timers[bug_name]['start_time'] = None
-    
+        return (time.time() - timer['start_time']) >= timer['duration']
+
+    def reset(self, name):
+        if name in self.timers:
+            self.timers[name]['start_time'] = None
+
     def reset_all(self):
-        """Reset all bug timers"""
         self.timers.clear()
-    
-    def get_time_remaining(self, bug_name):
-        """Get seconds until bug respawns (for UI/logging)"""
-        if bug_name not in self.timers:
+
+    def time_remaining(self, name):
+        if name not in self.timers:
             return 0
-        
-        timer = self.timers[bug_name]
+        timer = self.timers[name]
         if timer['start_time'] is None:
             return 0
-        
-        elapsed = time.time() - timer['start_time']
-        remaining = timer['duration'] - elapsed
-        return max(0, remaining)
+        return max(0, timer['duration'] - (time.time() - timer['start_time']))

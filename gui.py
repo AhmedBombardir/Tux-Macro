@@ -174,7 +174,7 @@ class CheckBox:
 
     def __init__(self, x=15, y=15, width=16, height=16, on_change=None):
         self.rect = pygame.Rect(x, y, width, height)
-        self.small_rect = pygame.Rect(x + width // 4, y + height // 4, 8, 8)
+        self.small_rect = pygame.Rect(x + 4, y + 4, 8, 8)
         self.checked = False
         self.on_change = on_change
 
@@ -183,18 +183,20 @@ class CheckBox:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 self.checked = not self.checked
+                if self.on_change:
+                    self.on_change(self.checked)
     
     def draw(self, screen):
-        pygame.draw.rect(screen, (60, 60, 60), self.rect)
+        pygame.draw.rect(screen, (120, 120, 120), self.rect)
 
         if self.checked:
             small_rect = pygame.Rect(
-                self.rect.x + self.rect.width // 4,
-                self.rect.y + self.rect.height // 4,
+                self.rect.x + 4,
+                self.rect.y + 4,
                 8,
                 8
             )
-            pygame.draw.rect(screen, (30, 30, 30), small_rect)
+            pygame.draw.rect(screen, (60, 60, 60), small_rect)
             
 # ---------- Tab class -----------
 
@@ -312,10 +314,12 @@ def DrawText(text, location, size, color=(255,255,255)):
 #------------------------------------------------------------------
 
 def OnCheck(setting_name):
-    """Called when a checkbox is altered"""
-    settings.setting_name = not setting_name
-    print(f"[GUI] Checkbox altered, {setting_name} changed")
-
+    def callback(val):
+        is_enabled, duration = settings.collect_dict[setting_name]
+        settings.collect_dict[setting_name] = (val, duration)
+        print(f"[GUI] {setting_name} = {val}")
+    return callback
+    
 def OnPatternChange(pattern_name):
     """Called when pattern dropdown changes"""
     settings.pattern = pattern_name
@@ -405,16 +409,16 @@ collect_label = Label("Collect", BIG_FONT, color=(150,150,150))
 collect_tab.add_element(collect_label, 15, 15)
 #collect_tab.add_element(wip_label, 15, 15)
 wealth_clock = Label("Wealth Clock", FONT, color=(255,255,255))
-wealth_clock_cb = CheckBox(120, 30, 15,15, on_change=OnCheck)
+wealth_clock_cb = CheckBox(on_change=OnCheck('wealth_clock'))
 
 mondo = Label("Mondo Chick", FONT, color=(255,255,255))
-mondo_cb = CheckBox(120, 30, 15,15, on_change=OnCheck)
+mondo_cb = CheckBox(on_change=OnCheck('mondo'))
 
 ant_pass = Label("Ant Pass", FONT, color=(255,255,255))
-ant_pass_cb = CheckBox(120, 45, 15,15, on_change=OnCheck)
+ant_pass_cb = CheckBox(on_change=OnCheck('ant_pass'))
 
 robo_pass = Label("Robo Pass", FONT, color=(255,255,255))
-robo_pass_cb = CheckBox(120, 60, 15,15, on_change=OnCheck)
+robo_pass_cb = CheckBox(on_change=OnCheck('robo_pass'))
 
 
 collect_tab.add_element(wealth_clock, 15, 40)
@@ -441,14 +445,14 @@ strawberry_dispenser = Label("Strawberry", FONT)
 coconut_dispenser = Label("Coconut", FONT)
 glue_dispenser = Label("Glue", FONT)
 
-honey_dispenser_cb = CheckBox(on_change=OnCheck)
-treat_dispenser_cb = CheckBox(on_change=OnCheck)
-blueberry_dispenser_cb = CheckBox(on_change=OnCheck)
-strawberry_dispenser_cb = CheckBox(on_change=OnCheck)
-coconut_dispenser_cb = CheckBox(on_change=OnCheck)
-glue_dispenser_cb = CheckBox(on_change=OnCheck)
+honey_dispenser_cb = CheckBox(on_change=OnCheck('honey_dispenser'))
+treat_dispenser_cb = CheckBox(on_change=OnCheck('treat_dispenser'))
+blueberry_dispenser_cb = CheckBox(on_change=OnCheck('blueberry_dispenser'))
+strawberry_dispenser_cb = CheckBox(on_change=OnCheck('strawberry_dispenser'))
+coconut_dispenser_cb = CheckBox(on_change=OnCheck('coconut_dispenser'))
+glue_dispenser_cb = CheckBox(on_change=OnCheck('glue_dispenser'))
 
-collect_tab.add_element(honey_dispenser, 200, 40)
+'''collect_tab.add_element(honey_dispenser, 200, 40)
 collect_tab.add_element(treat_dispenser, 200, 60)
 collect_tab.add_element(blueberry_dispenser, 200, 80)
 collect_tab.add_element(strawberry_dispenser, 300, 40)
@@ -460,7 +464,7 @@ collect_tab.add_element(treat_dispenser_cb, 200 + 75, 60)
 collect_tab.add_element(blueberry_dispenser_cb, 200 + 75, 80)
 collect_tab.add_element(strawberry_dispenser_cb, 300 + 75, 40)
 collect_tab.add_element(coconut_dispenser_cb, 300 + 75, 60)
-collect_tab.add_element(glue_dispenser_cb, 300 + 75, 80)
+collect_tab.add_element(glue_dispenser_cb, 300 + 75, 80)'''
 
 # ---------- Beesmass ----------
 
@@ -473,6 +477,7 @@ robo_party = Label("Robo Party", FONT)
 gingerbread = Label("Gingerbread", FONT)
 snow_machine = Label("Snow Machine", FONT)
 candles = Label("Candles", FONT)
+honeystorm = Label("Honeystorm", FONT)
 samovar = Label("Samovar", FONT)
 lid_art = Label("Lid Art", FONT)
 gummy_beacon = Label("Gummy Beacon", FONT)
@@ -484,21 +489,23 @@ collect_tab.add_element(robo_party, 15, 220)
 collect_tab.add_element(gingerbread, 140, 160)
 collect_tab.add_element(snow_machine, 140, 180)
 collect_tab.add_element(candles, 140, 200)
+collect_tab.add_element(honeystorm, 140, 220)
 collect_tab.add_element(samovar, 265, 160)
 collect_tab.add_element(lid_art, 265, 180)
 collect_tab.add_element(gummy_beacon, 265, 200)
 
 
-stockings_cb = CheckBox(on_change=OnCheck)
-wreath_cb = CheckBox(on_change=OnCheck)
-feast_cb = CheckBox(on_change=OnCheck)
-robo_party_cb = CheckBox(on_change=OnCheck)
-gingerbread_cb = CheckBox(on_change=OnCheck)
-snow_machine_cb = CheckBox(on_change=OnCheck)
-candles_cb = CheckBox(on_change=OnCheck)
-samovar_cb = CheckBox(on_change=OnCheck)
-lid_art_cb = CheckBox(on_change=OnCheck)
-gummy_beacon_cb = CheckBox(on_change=OnCheck)
+stockings_cb = CheckBox(on_change=OnCheck('stockings'))
+wreath_cb = CheckBox(on_change=OnCheck('wreath'))
+feast_cb = CheckBox(on_change=OnCheck('feast'))
+robo_party_cb = CheckBox(on_change=OnCheck('robo_party'))
+gingerbread_cb = CheckBox(on_change=OnCheck('gingerbread'))
+snow_machine_cb = CheckBox(on_change=OnCheck('snow_machine'))
+candles_cb = CheckBox(on_change=OnCheck('candles'))
+honeystorm_cb = CheckBox(on_change=OnCheck('honeystorm'))
+samovar_cb = CheckBox(on_change=OnCheck('samovar'))
+lid_art_cb = CheckBox(on_change=OnCheck('lid_art'))
+gummy_beacon_cb = CheckBox(on_change=OnCheck('gummy_beacon'))
 
 collect_tab.add_element(stockings_cb, 15 + 90, 160)
 collect_tab.add_element(wreath_cb, 15 + 90, 180)
@@ -507,6 +514,7 @@ collect_tab.add_element(robo_party_cb, 15 + 90, 220)
 collect_tab.add_element(gingerbread_cb, 140 + 90, 160)
 collect_tab.add_element(snow_machine_cb, 140 + 90, 180)
 collect_tab.add_element(candles_cb, 140 + 90, 200)
+collect_tab.add_element(honeystorm_cb, 140 + 90, 220)
 collect_tab.add_element(samovar_cb, 265 + 90, 160)
 collect_tab.add_element(lid_art_cb, 265 + 90, 180)
 collect_tab.add_element(gummy_beacon_cb, 265 + 90, 200)
