@@ -111,7 +111,7 @@ def Cannon():
     time.sleep(0.5)
     hold('w', 1)
     hold('s', 0.1)
-    hold('d', 1 * settings.hiveSlot)
+    hold('d', 1.05 * settings.hiveSlot)
     press('space')
     time.sleep(0.15)
     key_down('d')

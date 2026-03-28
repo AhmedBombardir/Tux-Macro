@@ -2,6 +2,9 @@ import pygame
 import sys
 import settings
 import os
+import threading
+import evdev
+from evdev import ecodes
 
 pygame.init()
 
@@ -44,6 +47,47 @@ screen = pygame.display.set_mode((500, 400))
 
 running = True
 playing = False
+
+# ---------- Global hotkeys via evdev ----------
+
+def _on_key(event):
+    """Handle a key-down event from any keyboard device"""
+    global running, playing
+    if event.code == ecodes.KEY_F1:
+        playing = not playing
+        status = "STARTED" if playing else "STOPPED"
+        print(f"[GUI] Macro {status}")
+        print(f"[GUI] Current settings: Pattern={settings.pattern}, Field={settings.field}")
+    elif event.code == ecodes.KEY_F3:
+        running = False
+
+def _listen_device(dev):
+    """Thread target: read events from one device"""
+    try:
+        for event in dev.read_loop():
+            if event.type == ecodes.EV_KEY and event.value == 1:  # key down only
+                _on_key(event)
+    except Exception:
+        pass  # Device disconnected or permission error — just stop
+
+def _start_hotkey_listeners():
+    """Spawn one listener thread per keyboard device that has F1"""
+    found = 0
+    for path in evdev.list_devices():
+        try:
+            dev = evdev.InputDevice(path)
+            caps = dev.capabilities().get(ecodes.EV_KEY, [])
+            if ecodes.KEY_F1 in caps:
+                print(f"[EVDEV] Listening on: {dev.name} ({dev.path})")
+                t = threading.Thread(target=_listen_device, args=(dev,), daemon=True)
+                t.start()
+                found += 1
+        except Exception:
+            pass
+    if found == 0:
+        print("[EVDEV] No keyboard found — add yourself to the 'input' group")
+
+_start_hotkey_listeners()
 
 # ---------- Label class -----------
 
@@ -452,7 +496,7 @@ strawberry_dispenser_cb = CheckBox(on_change=OnCheck('strawberry_dispenser'))
 coconut_dispenser_cb = CheckBox(on_change=OnCheck('coconut_dispenser'))
 glue_dispenser_cb = CheckBox(on_change=OnCheck('glue_dispenser'))
 
-'''collect_tab.add_element(honey_dispenser, 200, 40)
+collect_tab.add_element(honey_dispenser, 200, 40)
 collect_tab.add_element(treat_dispenser, 200, 60)
 collect_tab.add_element(blueberry_dispenser, 200, 80)
 collect_tab.add_element(strawberry_dispenser, 300, 40)
@@ -464,7 +508,7 @@ collect_tab.add_element(treat_dispenser_cb, 200 + 75, 60)
 collect_tab.add_element(blueberry_dispenser_cb, 200 + 75, 80)
 collect_tab.add_element(strawberry_dispenser_cb, 300 + 75, 40)
 collect_tab.add_element(coconut_dispenser_cb, 300 + 75, 60)
-collect_tab.add_element(glue_dispenser_cb, 300 + 75, 80)'''
+collect_tab.add_element(glue_dispenser_cb, 300 + 75, 80)
 
 # ---------- Beesmass ----------
 
@@ -587,16 +631,6 @@ def Render():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_F1:
-                playing = not playing
-                status = "STARTED" if playing else "STOPPED"
-                print(f"[GUI] Macro {status}")
-                print(f"[GUI] Current settings: Pattern={settings.pattern}, Field={settings.field}")
-
-            if event.key == pygame.K_F3:
-                running = False
-
         # Handle tab manager events (includes dropdown handling)
         tab_manager.handle_event(event)
 

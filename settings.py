@@ -1,4 +1,4 @@
-import gui, paths
+import paths
 
 # Field selection
 field = "Clover"  # Options: Clover, Mushroom, Spider, Bamboo, Strawberry, Blue Flower, Pine Tree, Pineapple, Pumpkin, Cactus, Stump, Rose, Dandelion, Sunflower, Pepper
@@ -69,7 +69,7 @@ bug_run_enabled = False
 sprinkler = "Basic"  # Options: Basic, Silver, Golden, Diamond, Supreme
 
 # Hive slot (1-6)
-hiveSlot = 1
+hiveSlot = 6
 
 # Movespeed
 moveSpeed = 29
