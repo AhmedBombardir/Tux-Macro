@@ -23,14 +23,14 @@ def LoadFont(size):
         except:
             pass
     
-    # Try system path
+    '''    # Try system path
     system_font = '/usr/share/fonts/TTF/DejaVuSansMono.ttf'
     if os.path.exists(system_font):
         try:
             return pygame.font.Font(system_font, size)
         except:
             pass
-    
+    ''' 
     # Fallback to pygame default
     print(f"[GUI] DejaVu Sans Mono not found, using default font")
     return pygame.font.Font(None, size)
@@ -242,6 +242,51 @@ class CheckBox:
             )
             pygame.draw.rect(screen, (60, 60, 60), small_rect)
             
+
+
+class Stepper:
+    
+    def __init__(self, x=15, y=15, width=16, height=16, on_change=None, min_value=1, max_value=None):
+        self.rect = pygame.Rect(x, y, width * 3, height)
+        self.lRect = pygame.Rect(x, y, width, height)
+        self.rRect = pygame.Rect(x + 2 * width, y, width, height)
+        self.value_rect = pygame.Rect(x + width, y, width, height)
+        self.value = min_value
+        self.min_value = min_value
+        self.max_value = max_value
+        self.on_change = on_change
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.lRect.collidepoint(event.pos) and self.value > self.min_value:
+                self.value -= 1
+                if self.on_change:
+                    self.on_change(self.value)
+            elif self.rRect.collidepoint(event.pos):
+                if self.max_value is None or self.value < self.max_value:
+                    self.value += 1
+                    if self.on_change:
+                        self.on_change(self.value)
+
+    def draw(self, screen):
+        self.lRect.x = self.rect.x
+        self.lRect.y = self.rect.y
+        self.rRect.x = self.rect.x + self.lRect.width * 2
+        self.rRect.y = self.rect.y
+        self.value_rect.x = self.rect.x + self.lRect.width
+        self.value_rect.y = self.rect.y
+
+        pygame.draw.rect(screen, (120, 120, 120), self.lRect)
+        pygame.draw.rect(screen, (120, 120, 120), self.rRect)
+
+        label_surf = FONT.render(str(self.value), True, (255, 255, 255))
+        screen.blit(label_surf, label_surf.get_rect(center=self.value_rect.center))
+
+        minus = FONT.render("<", True, (255, 255, 255))
+        plus = FONT.render(">", True, (255, 255, 255))
+        screen.blit(minus, minus.get_rect(center=self.lRect.center))
+        screen.blit(plus, plus.get_rect(center=self.rRect.center))
+
 # ---------- Tab class -----------
 
 class Tab:
@@ -378,6 +423,12 @@ def OnSprinklerChange(sprinkler_name):
     """Called when sprinkler dropdown changes"""
     settings.sprinkler = sprinkler_name
     print(f"[GUI] sprinkler changed to: {sprinkler_name}")
+
+def OnHiveSlotChange(value):
+    settings.hiveSlot = value
+    print(f"[GUI] hiveSlot changed to: {value}")
+
+
 
 def OnTextSubmit(text):
     try:
@@ -591,20 +642,25 @@ planters_tab.add_element(wip_label, 15, 15)
 settings_tab = Tab("Settings")
 sprinkler_label = Label("Sprinkler", FONT)
 movespeed_label = Label("Movespeed", FONT)
-textbox = TextBox(
+movespeed_textbox = TextBox(
     x=15, y=60, 
     width=120, height=20, 
     font=FONT,
     placeholder="Enter text...",
     on_submit=OnTextSubmit
 )
+hiveslot_label = Label("Hive Slot", FONT)
+settings_tab.add_element(hiveslot_label, 15, 120)
+hiveslot_stepper = Stepper(on_change=OnHiveSlotChange, max_value=6)
+hiveslot_stepper.value = settings.hiveSlot
+settings_tab.add_element(hiveslot_stepper, 100, 120)
 
-textbox.text = str(settings.moveSpeed)
+movespeed_textbox.text = str(settings.moveSpeed)
 
 settings_tab.add_element(sprinkler_label, 15, 20)
 settings_tab.add_element(sprinkler_dropdown, 15, 35)
 settings_tab.add_element(movespeed_label, 15, 60)
-settings_tab.add_element(textbox, 15, 75)
+settings_tab.add_element(movespeed_textbox, 15, 75)
 
 
 

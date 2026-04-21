@@ -592,9 +592,14 @@ def Treat_dispenser():
     time.sleep(0.08)
     press('space')
     
-    hold('d', 2)
-    hold('w', 3)
-    press('space')
+    hold('d', 4.25)
+    hold('w', 5)
+    hold('a', 5)
+    hold('w', 1.5)
+    hold('s', 0.65)
+    hold('d', 2.2)
+    time.sleep(0.08)
+    press('e')
     time.sleep(3)
     
 
@@ -602,16 +607,70 @@ def Cannon_blueberry_dispenser():
 
     global rotation
 
-    time.sleep(0.5)
+    for i in range(0, 2):
+        press('<')
+        rotation -= 45
+
+    time.sleep(0.65)
+    press('e')
+    time.sleep(0.1)
+    hold('w', 0.16)
+    time.sleep(0.08)
+    press('space')
+    time.sleep(0.08)
+    press('space')
+    time.sleep(0.08)
+    time.sleep(4)
+    press('space')
+    time.sleep(3)
+    hold('w', 1.5)
+    hold('a', 3)
+    hold('w', 6)
+    hold('s', 1)
+    hold('d', 1.2)
+    hold('w', 1.75)
+    hold('d', 2)
+    hold('a', 0.5)
+    hold('w', 1.5)
+    hold('s', 0.1)
+    time.sleep(0.08)
     press('e')
 
+    time.sleep(3)
 
 def Cannon_strawberry_dispenser():
 
     global rotation
 
     time.sleep(0.5)
+    hold('d', 3)
+    hold('w', 0.5)
+    press('space')
+    time.sleep(0.08)
+    hold('d', 2)
+    hold('w', 0.5)
+    press('space')
+    time.sleep(0.08)
+    hold('d', 0.5)
+    hold('s', 0.1)
+    hold('w', 0.25)
+    for i in range(0, 2):
+        press('>')
+    key_down('d')
+    press('space')
+    time.sleep(0.5)
+    press('space')
+    key_up('d')
+    
+    time.sleep(2)
+    key_down('d')
+    key_down('s')
+    wait(1.1)
+    key_up('d')
+    key_up('s')
+    time.sleep(0.5)
     press('e')
+    time.sleep(1)
 
 
 
@@ -620,7 +679,39 @@ def Coconut_dispenser():
     global rotation
 
     time.sleep(0.5)
+    
+    hold('d', 3)
+    hold('w', 0.5)
+    press('space')
+    time.sleep(0.08)
+    hold('d', 2)
+    hold('w', 0.5)
+    press('space')
+    time.sleep(0.08)
+    hold('w', 6)
+    time.sleep(0.5)
+    press('space')
+    time.sleep(0.08)
+    hold('w', 0.5)
+    time.sleep(0.5)
+    press('space')
+    time.sleep(0.08)
+    hold('w', 0.5)
+    time.sleep(0.25)
+    key_down('a')
+    key_down('w')
+    wait(5)
+    key_up('a')
+    key_up('w')
+    
+    hold('a', 3)
+    hold('w', 3)
+    hold('s', 0.5)
+    hold('d', 3)
+    hold('a', 0.25)
+    time.sleep(0.08)
     press('e')
+    time.sleep(3)
 
 
 def Glue_dispenser():
@@ -628,7 +719,22 @@ def Glue_dispenser():
     global rotation
 
     time.sleep(0.5)
+        
     press('e')
+    time.sleep(1.25)
+    key_down('w')
+    key_down('a')
+    press('space')
+    time.sleep(0.08)
+    press('space')
+    time.sleep(2.5)
+    key_up('a')
+    time.sleep(5)
+    key_up('w')
+
+    press('space')
+    time.sleep(3)
+    
 
 
 def Cannon_stockings():

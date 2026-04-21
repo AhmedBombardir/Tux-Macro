@@ -69,7 +69,7 @@ bug_run_enabled = False
 sprinkler = "Basic"  # Options: Basic, Silver, Golden, Diamond, Supreme
 
 # Hive slot (1-6)
-hiveSlot = 6
+hiveSlot = 1
 
 # Movespeed
 moveSpeed = 29

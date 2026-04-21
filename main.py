@@ -483,10 +483,9 @@ def macro_loop():
 
 
 
+
         # Navigate to field
         if current_pattern is None and not paths_executed:
-
-            paths.Reset()
             with collect_state["lock"]:
                 if collect_state["active"]:
                     continue
@@ -494,28 +493,30 @@ def macro_loop():
                 if bug_run_state["active"]:
                     continue
 
-            found = False
-            for template in ["at_hive"]:
-                found, confidence, pos = scanner.check_image(template, 0.95)
-                print(f"[MACRO] {template}: found={found} ({confidence:.0%})")
-                if found:
-                    break
+            at_hive, conf1, _ = scanner.check_image("at_hive", 0.95)
+            at_cannon, conf2, _ = scanner.check_image("E", 0.95)
+            print(f"[MACRO] at_hive: {at_hive} ({conf1:.0%}) | E: {at_cannon} ({conf2:.0%})")
 
-            if not found:
+            if not at_hive and not at_cannon:
                 print("[MACRO] Hive not found, resetting...")
+                with collect_state["lock"]:
+                    in_collect = collect_state["active"]
+                with bug_run_state["lock"]:
+                    in_bug = bug_run_state["active"]
+                if not in_collect and not in_bug:
+                    paths.Reset()
+                    time.sleep(1)
                 continue
 
             paths.Reset_p2()
             paths.Cannon()
             time.sleep(1)
 
-            found, confidence, pos = scanner.check_image("E", 0.9)
+            found, confidence, _ = scanner.check_image("E", 0.9)
             if not found:
                 print("[MACRO] Cannon not found, resetting...")
                 paths.Reset()
                 continue
-
-
 
             field_func = FIELD_PATHS.get(settings.field)
             if field_func:
