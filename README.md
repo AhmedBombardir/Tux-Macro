@@ -7,6 +7,7 @@ It supports custom patterns as well as custom paths
 Be sure to join our discord: https://discord.gg/v2zmnXTJB
 
 Imporant info:
+- Run sudo usermod -aG input $USER for the macro to work
 - Set up a global hotkey to kill the macro, for example f3
 - The macro is in prerelease state, it may contain bugs / not work properly
 - report issues on discord
